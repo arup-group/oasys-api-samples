@@ -1,0 +1,154 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+DotNetHelpers
+</name>
+</assembly>
+<members>
+<member name="T:Oasys.Gsa.DotNetHelpers.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:Oasys.Gsa.DotNetHelpers.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:Oasys.Gsa.DotNetHelpers.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.MatchDescription(System.String,Oasys.Gsa.DotNetHelpers.GsaComUtil.SectionMatch_Flags)">
+ <summary>
+ calls Gen_MatchDesc. Options include bSuperSeded, bAttemptStd
+ </summary>
+ <param name="sDesc"></param>
+ <param name="options"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.SetGsaTemporaryUnitsMaterial(System.String[]@)">
+ <summary>
+ CAUTION: Special function for use ONLY for setting material units
+ </summary>
+ <param name="unitStrings"></param>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.SectionDimensions(System.String,System.Collections.SortedList@)">
+ <summary>
+ Given a descriptionm, return a map of dimension name to dimension value
+ </summary>
+ <param name="desc"></param>
+ <param name="dimensions"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.GetSid(System.String@,System.Int32@)">
+ <summary>
+ Fetches value associated with the RVT key from the sid of the record
+ </summary>
+ <param name="keyword"></param>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.HighestRecord(System.String@)">
+ <summary>
+ Highest record number for a given module
+ </summary>
+ <param name="keyword"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.ModuleRecordExists(System.String@,System.Int32)">
+ <summary>
+ Does record exist for keyword
+ </summary>
+ <param name="keyword"></param>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.MaterialSid(System.Int32@)">
+ <summary>
+ gets revit id for the material record
+ </summary>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks>No need to extract RevitID again when using this</remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.ElemSid(System.Int32@)">
+ <summary>
+ gets revit id for the element record
+ </summary>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks>No need to extract RevitID again when using this</remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.GridPlaneSid(System.Int32@)">
+ <summary>
+ gets revit id for the grid plane record
+ </summary>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks>No need to extract RevitID again when using this</remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.GridLineSid(System.Int32@)">
+ <summary>
+ gets revit id for the grid line record
+ </summary>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks>No need to extract RevitID again when using this</remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.EntSid(System.String@,System.Int32@)">
+ <summary>
+ gets revit id for a member or element
+ </summary>
+ <param name="entity"></param>
+ <param name="record"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.ExtractId(System.String)">
+ <summary>
+ returns sid from string {RVT:sid}
+ </summary>
+ <param name="sArg"></param>
+ <returns></returns>
+ <remarks>sid can be of form {tag1:{subtag1:data}{subtag2:data}}{tag2:data}</remarks>
+</member>
+<member name="T:Oasys.Gsa.DotNetHelpers.CsvRow">
+ <summary>
+ Class to store one CSV row
+ </summary>
+</member>
+<member name="T:Oasys.Gsa.DotNetHelpers.CsvFileWriter">
+ <summary>
+ Class to write data to a CSV file
+ </summary>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.CsvFileWriter.WriteRow(Oasys.Gsa.DotNetHelpers.CsvRow)">
+ <summary>
+ Writes a single row to a CSV file.
+ </summary>
+ <param name="row">The row to be written</param>
+</member>
+<member name="T:Oasys.Gsa.DotNetHelpers.CsvFileReader">
+ <summary>
+ Class to read data from a CSV file
+ </summary>
+</member>
+<member name="M:Oasys.Gsa.DotNetHelpers.CsvFileReader.ReadRow(Oasys.Gsa.DotNetHelpers.CsvRow)">
+ <summary>
+ Reads a row of data from a CSV file
+ </summary>
+ <param name="row"></param>
+ <returns></returns>
+</member>
+</members>
+</doc>

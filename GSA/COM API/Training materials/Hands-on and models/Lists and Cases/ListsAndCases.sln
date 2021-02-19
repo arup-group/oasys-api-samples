@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ListsAndCases", "ListsAndCases.vbproj", "{D765B63D-FDC0-42FF-809D-5932EAEFE059}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D765B63D-FDC0-42FF-809D-5932EAEFE059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D765B63D-FDC0-42FF-809D-5932EAEFE059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D765B63D-FDC0-42FF-809D-5932EAEFE059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D765B63D-FDC0-42FF-809D-5932EAEFE059}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,33 @@
+// GSA accepts a GWC filename as a command line argument. 
+// A GWC file is an ASCII file containing a number of commands. 
+// The commands are processed by GSA as a batch operation 
+// in the sequence in which they appear in the GWC file.
+//
+// Notes:
+// Text following "//" is ignored
+// Data file extensions GWB, GWA and CSV are valid
+// The SAVE command saves in the same format as last 
+//   saved or, if not saved this session, as read.
+//
+// Sample GWC file: 
+//
+
+{
+OPEN("f:\stair.csv");		// open a GWA file in 'comma separated variable' format      
+// DELETE(RESULTS     );
+DELETE(RESULTS_AND_CASES);
+ANALYSE();
+SAVE();				// save "f:\stair.csv"
+SAVEAS("f:\stair.gwb" );
+DELETE(RESULTS_AND_CASES);
+SAVE();				// save "f:\stair.gwb"
+SAVEAS("f:\stair.csv" );
+CLOSE();
+EXIT();
+}
+
+
+
+
+
+
