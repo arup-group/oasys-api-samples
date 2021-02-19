@@ -1,0 +1,144 @@
+' excel
+        Dim excel As New Microsoft.Office.Interop.Excel.Application
+
+        Dim wb As Workbook = excel.Workbooks.Add()
+
+        Dim sheet As Worksheet = wb.Worksheets(1)
+
+
+        If IsNothing(sheet) Then
+            Console.Write("sheet is null")
+        End If
+
+        For i As Integer = 1 To 100
+            sheet.Cells(i, 1).Value = excel.RandBetween(1, 1000)
+        Next
+
+        'Console.WriteLine(sheet.Name.ToString())
+
+        For i As Integer = 1 To 100
+            Dim n As Integer = sheet.Cells(i, 1).Value
+            If IsPrime(n) Then
+                sheet.Cells(i, 2).Value = "Prime"
+            End If
+        Next
+
+        wb.SaveAs("c:\GSA_training\primes.xlsx")
+        excel.Quit()
+
+        excel = Nothing
+
+
+
+' core functions
+        Dim gsaObj As New gsa_8_7.ComAuto
+
+        gsaObj.Open("c:\GSA_training\Env.gwb")
+
+        gsaObj.Delete("RESULTS_AND_CASES")
+
+        'LOAD_BEAM_POINT.2 | name | list | case | axis | proj | dir | pos |  value 
+        gsaObj.GwaCommand("LOAD_BEAM_POINT.2,load added by COM,2,4,GLOBAL,NO,Z,-.25,-12")
+        gsaObj.Analyse()
+        gsaObj.SaveAs("c:\GSA_training\Env_loaded.gwb")
+        gsaObj.Close()
+
+        gsaObj = Nothing
+
+'-------------------------------		
+
+' GwaCommand
+        ' element 1
+        elRef = 1 ' could be HIGHEST + 1 too
+        gwaRecord = "EL," & elRef & ",,NO_RGB,BEAM,1,1," & n1 & "," & n2
+        ret = gsa.GwaCommand(gwaRecord)
+        If 0 = ret Then
+            Console.WriteLine("Created element {0}", elRef)
+        Else
+            Console.WriteLine("Failed to create element {0}", elRef)
+        End If
+
+        ' element 2
+        elRef += 1
+        gwaRecord = String.Format("EL,{0},,NO_RGB,BEAM,1,1, {1},{2}", elRef, n2, n3)
+        ret = gsa.GwaCommand(gwaRecord)
+        If 0 = ret Then
+            Console.WriteLine("Created element {0}", elRef)
+        Else
+            Console.WriteLine("Failed to create element {0}", elRef)
+        End If
+
+        ' element 3
+        elRef += 1
+        gwaRecord = String.Format("EL,{0},,NO_RGB,BEAM,1,1, {1},{2}", elRef, n3, n4)
+        ret = gsa.GwaCommand(gwaRecord)
+        If 0 = ret Then
+            Console.WriteLine("Created element {0}", elRef)
+        Else
+            Console.WriteLine("Failed to create element {0}", elRef)
+        End If
+
+		' the following shows function reuse 
+        ret = CreateBeam(elRef, 1, n1, n2, gsa)
+        If True = ret Then
+            elRef += 1
+        End If
+        ret = CreateBeam(elRef, 1, n2, n3, gsa)
+        If True = ret Then
+            elRef += 1
+        End If
+        ret = CreateBeam(elRef, 1, n3, n4, gsa)
+        If True = ret Then
+            elRef += 1
+        End If
+
+		
+'Function CreateBeam(ByVal index As Integer, ByVal prop As Integer, ByVal topo0 As Integer,
+'                    ByVal topo1 As Integer, ByRef gsaObject As ComAuto) As Boolean
+'    Dim gwaRecord As String = String.Format("EL,{0},,NO_RGB,BEAM,{1},1, {2},{2}", index, prop, topo0, topo1)
+'    Dim ret As Integer = gsaObject.GwaCommand(gwaRecord)
+'    If 0 = ret Then
+'        Return True
+'    Else
+'        Return False
+'    End If
+'End Function
+'------------------------------
+' lists
+        ret = gsa.EntitiesInList("XY1", GsaEntity.NODE, ents)
+
+'------------------------
+' output
+        ret = gsa.Output_Init(OP_INIT_INFINITY, "default", acaseString, dataref, 3)
+
+        If Not Integer.Equals(0, ret) Then
+            Console.WriteLine("Output_Init failed.")
+            Exit Sub
+        End If
+
+        Dim ents() As Integer ' array to store node numbers in the list
+
+        ret = gsa.EntitiesInList("XY1", GsaEntity.NODE, ents)
+
+        ' check output title and verify it's per node
+        Dim isPerNode As Short = gsa.Output_IsDataRef(OP_IS_PER_REC)
+
+        Dim title As String = gsa.Output_DataTitle(1)
+
+        Console.WriteLine("Output title: " & title & "IsPerRecord = " & isPerNode)
+
+        ' loop over the contents of the list
+        For Each ent In ents
+            ret = gsa.Output_DataExist(ent)
+            If 0 = ret Then
+                Console.WriteLine("Output_DataExist failed for " & ent)
+                Exit For
+            End If
+
+            Dim result As Double = gsa.Output_Extract(ent, 0)
+            Console.WriteLine("Result for node " & ent & " = " & result)
+        Next
+
+		
+
+

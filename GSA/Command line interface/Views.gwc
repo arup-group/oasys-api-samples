@@ -1,0 +1,44 @@
+// GSA accepts a GWC filename as a command line argument. 
+// A GWC file is an ASCII file containing a number of commands. 
+// The commands are processed by GSA as a batch operation 
+// in the sequence in which they appear in the GWC file.
+// A LOG file is produced in the GWC file folder.
+//
+// Notes:
+// Text following "//" is ignored.
+// Data file extensions GWB, GWA and CSV are valid.
+// The SAVE command saves in the same format as last 
+//   saved or, if not saved this session, as read.
+// Where a view name is required the following are valid:
+//   the name of a saved view or view list
+//   ALL_PGV      - all preferred Graphic Views
+//   ALL_SGV      - all saved Graphic Views
+//   ALL_POV      - all preferred Output Views
+//   ALL_SOV      - all saved Output Views
+//   ALL_LST      - all views in all View Lists
+//   TAGGED_PGV   - selected preferred Graphic Views
+//   TAGGED_SGV   - selected saved Graphic Views
+//   TAGGED_POV   - selected preferred Output Views
+//   TAGGED_SOV   - selected saved Output Views
+//   TAGGED_LST   - all views in selected View Lists
+
+//
+// Sample GWC file: 
+//
+
+{
+Open("d:\Views.gwb");							// open a GWB file in 'comma separated variable' format      
+// Delete(RESULTS     );						// delete results but not analysis cases
+Delete(RESULTS_AND_CASES);						// selete results and analysis cases
+Analyse();										// analyse all unanalysed cases or, if none, do static analysis of all load cases
+Save();											// save "d:\Views.gwb"
+SaveAs("d:\Views.csv");							// save in GWA 'comma separated variable' format
+PrintView("TAGGED_SGV");						// print a view (it's a saved Graphic View)
+SaveViewToFile("view list B", TXT);				// save Output Views to tab delimited TXT file
+												// this is a view list so all Output Views in this view list will be saved
+SaveViewToFile("view list A", PNG);				// save Graphic Views to PNG file
+												// this is a view list so all Graphic Views in this view list will be saved
+Close()
+Exit()
+
+}
