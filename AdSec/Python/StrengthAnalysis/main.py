@@ -1,25 +1,14 @@
-# load .NET runtime
-import sys
-from pathlib import Path
-from clr_loader import get_coreclr
-from pythonnet import set_runtime
-api_path = Path(<path-to-adsec-api-dll>)
-sys.path.append(str(api_path))
-rt = get_coreclr(runtime_config=str(api_path/'AdSec_API.runtimeconfig.json'))
-set_runtime(rt)
+# Load the .NET Core API
+from api import load_api
+# Change this path to point to your AdSec API directory. e.g. load_api('C:\\Temp\\AdSecApi', 'AdSec_API')
+load_api('C:\\change_this_path', 'AdSec_API')
 
-# add api references
-import clr
-clr.AddReference('AdSec_API')
-clr.AddReference('UnitsNet')
-clr.AddReference('PythonNetHelpers')
-
-# import modules form namespace
+# Import modules from namespace
 from Oasys.AdSec import IAdSec, ISection, ILoad
 from Oasys.AdSec.DesignCode import EN1992
 from Oasys.AdSec.Materials import Concrete, Reinforcement
 from Oasys.AdSec.Profile import ICircle, IPoint
-from Oasys.AdSec.Reinforcement import *
+from Oasys.AdSec.Reinforcement import ICover, ILayerByBarCount, ILine
 import UnitsNet
 from UnitsNet import QuantityValue
 from PythonNetHelpers import TypeHelpers
@@ -57,6 +46,5 @@ def strength_analysis():
     print("The utilisation is: " + str(utilisation))
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     strength_analysis()
