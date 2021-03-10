@@ -36,15 +36,21 @@ def strength_analysis():
 
     # Calculate utilisation for a particular load
     axialForce = UnitsNet.Force.FromKilonewtons(TypeHelpers.Cast[QuantityValue](-100))
-    majorAxisBending = 4e4
+    majorAxisBending = 60000
     minorAxisBending = 0
     load = ILoad.Create(axialForce, majorAxisBending, minorAxisBending)
-    result = solution.Strength.Check(load)
+    strengthResult = solution.Strength.Check(load)
 
     # Display utilisation as a percentage
-    utilisation = round(result.LoadUtilisation * 100, 1)
+    utilisation = round(strengthResult.LoadUtilisation * 100, 1)
     print("The utilisation is: " + str(utilisation))
 
+    # Calculate the serviceability crack width under the same load
+    serviceabilityResult = solution.Serviceability.Check(load)
+
+    # Display the crack width in mm
+    crackWidth = round(serviceabilityResult.MaximumWidthCrack.Width * 1000, 2)
+    print("The utilisation is: " + str(crackWidth) + " mm")
 
 if __name__ == '__main__':
     strength_analysis()

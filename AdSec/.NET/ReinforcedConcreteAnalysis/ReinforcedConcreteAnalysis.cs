@@ -5,9 +5,9 @@ using Oasys.AdSec.Materials;
 using Oasys.AdSec.Profile;
 using Oasys.AdSec.Reinforcement;
 
-namespace StrengthAnalysis
+namespace Samples
 {
-    public static class StrengthAnalysis
+    public static class ReinforcedConcreteAnalysis
     {
         static void Main()
         {
@@ -32,15 +32,21 @@ namespace StrengthAnalysis
 
             // Calculate utilisation for a particular load
             var axialForce = UnitsNet.Force.FromKilonewtons(-100);
-            var majorAxisBending = 4e4;
+            var majorAxisBending = 60000;
             var minorAxisBending = 0;
             var load = ILoad.Create(axialForce, majorAxisBending, minorAxisBending);
-            IStrengthResult result = solution.Strength.Check(load);
+            IStrengthResult strengthResult = solution.Strength.Check(load);
 
             // Display utilisation as a percentage
-            double utilisation = Math.Round(result.LoadUtilisation * 100, 1);
+            double utilisation = Math.Round(strengthResult.LoadUtilisation * 100, 1);
             Console.WriteLine($"The utilisation is: {utilisation}%");
-            Console.ReadKey();
+
+            // Calculate the serviceability crack width under the same load
+            IServiceabilityResult serviceabilityResult = solution.Serviceability.Check(load);
+
+            // Display the crack width in mm
+            double crackWidth = Math.Round(serviceabilityResult.MaximumWidthCrack.Width * 1000, 2);
+            Console.WriteLine($"The maximum crack width is: {crackWidth}mm");
         }
     }
 }

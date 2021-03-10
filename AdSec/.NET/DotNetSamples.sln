@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrengthAnalysis", "StrengthAnalysis\StrengthAnalysis.csproj", "{F63AD60B-8359-4CD4-AF57-1EA25E122D97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReinforcedConcreteAnalysis", "ReinforcedConcreteAnalysis\ReinforcedConcreteAnalysis.csproj", "{F63AD60B-8359-4CD4-AF57-1EA25E122D97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

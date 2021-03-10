@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AdSec_API">
+      <HintPath>..\..\..\..\..\Users\Tim.Lyon\Desktop\api\AdSec_API.dll</HintPath>
+    </Reference>
+    <Reference Include="UnitsNet">
+      <HintPath>..\..\..\..\..\Users\Tim.Lyon\Desktop\api\UnitsNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
