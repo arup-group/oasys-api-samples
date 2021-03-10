@@ -43,14 +43,15 @@ def strength_analysis():
 
     # Display utilisation as a percentage
     utilisation = round(strengthResult.LoadUtilisation * 100, 1)
-    print("The utilisation is: " + str(utilisation))
+    print("The utilisation is: " + str(utilisation) + "%")
 
     # Calculate the serviceability crack width under the same load
     serviceabilityResult = solution.Serviceability.Check(load)
 
     # Display the crack width in mm
     crackWidth = round(serviceabilityResult.MaximumWidthCrack.Width * 1000, 2)
-    print("The utilisation is: " + str(crackWidth) + " mm")
+    print("The maximum crack width is: " + str(crackWidth) + " mm")
+
 
 if __name__ == '__main__':
     strength_analysis()
