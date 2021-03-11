@@ -5,11 +5,11 @@ using Oasys.AdSec.Materials;
 using Oasys.AdSec.Profile;
 using Oasys.AdSec.Reinforcement;
 
-namespace Samples
+namespace ReinforcedConcreteAnalysis
 {
     public static class ReinforcedConcreteAnalysis
     {
-        static void Main()
+        public static void Main()
         {
             // Create a circular section
             ICircle profile = ICircle.Create(0.5);

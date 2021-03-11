@@ -6,12 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="AdSec_API">
-      <HintPath>..\..\..\..\..\Users\Tim.Lyon\Desktop\api\AdSec_API.dll</HintPath>
-    </Reference>
-    <Reference Include="UnitsNet">
-      <HintPath>..\..\..\..\..\Users\Tim.Lyon\Desktop\api\UnitsNet.dll</HintPath>
-    </Reference>
+    <PackageReference Include="AdSec.API" Version="0.1.0-alpha" />
   </ItemGroup>
 
 </Project>
