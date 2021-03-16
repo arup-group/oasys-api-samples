@@ -14,18 +14,22 @@ from PythonNetHelpers import TypeHelpers
 
 
 def quantity_value(value) -> QuantityValue:
+    """Turns a raw number into a QuantityValue. Used by other conversion functions. """
     return TypeHelpers.Cast[QuantityValue](value)
 
 
 def mm(distance) -> Length:
+    """Create a strongly typed Length in millimetres"""
     return Length.FromMillimeters(quantity_value(distance))
 
 
 def kN(force) -> Force:
+    """Create a strongly typed Force in kilo newtons"""
     return Force.FromKilonewtons(quantity_value(force))
 
 
 def kNm(force) -> Moment:
+    """Create a strongly typed Moment in kilo newton metres"""
     return Moment.FromKilonewtonMeters(quantity_value(force))
 
 
