@@ -5,7 +5,6 @@ using Oasys.AdSec.Materials;
 using Oasys.AdSec.Profile;
 using Oasys.AdSec.Reinforcement;
 using UnitsNet;
-using IReinforcement = Oasys.AdSec.Materials.IReinforcement;
 
 namespace ReinforcedConcreteAnalysis
 {
@@ -15,18 +14,15 @@ namespace ReinforcedConcreteAnalysis
         {
             // Create a circular section
             var profile = ICircle.Create(Length.FromMillimeters(500));
-            IConcrete sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.C40_50;
+            IConcrete sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.C40_50;
             var section = ISection.Create(profile, sectionMaterial);
 
-            // Set the cover
-            section.Reinforcement.Cover = ICover.Create(Length.FromMillimeters(50));
-
             // Set some reinforcement
-            IReinforcement reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.S500B;
+            IReinforcement reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.S500B;
             ILayer layer = ILayerByBarCount.Create(4, reinforcementMaterial, Length.FromMillimeters(32));
             ILayeredGroup group = ILine.Create(IPoint.Create(Length.Zero, Length.Zero), IPoint.Create(Length.FromMillimeters(150), Length.FromMillimeters(150)), layer);
             group.Layers.Add(layer);
-            section.Reinforcement.Groups.Add(group);
+            section.ReinforcementGroups.Add(group);
 
             // Analyse the section to create a solution
             var adSec = IAdSec.Create(EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014);
