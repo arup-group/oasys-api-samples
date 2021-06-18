@@ -4,4 +4,4 @@ for general information about the AdSec API.
 
 ## Getting Started
 Please see the [Getting Started With C# and .NET](https://arup-group.github.io/oasys-combined/adsec-api/common/creating_applications/dotnet_clients.html)
-for information creating an API Client with C# and .NET.
+for information about creating an API Client with C# and .NET.
