@@ -1,19 +1,15 @@
-using System;
 using Moq;
 using Oasys.AdSec;
-using Oasys.AdSec.DesignCode;
-using Oasys.AdSec.Materials;
-using Oasys.AdSec.StandardMaterials;
-using Oasys.Profiles;
-using Oasys.AdSec.Reinforcement;
-using Oasys.AdSec.Reinforcement.Groups;
-using Oasys.AdSec.Reinforcement.Layers;
 using UnitsNet;
-using Oasys.Units;
 using Xunit;
 
 namespace SampleProgramTestsUsingMocking
 {
+    /// <summary>
+    /// This is a very simple example of a mock object.
+    /// It shows how we can create a fake <see cref="IServiceabilityResult"/>
+    /// and then get fake crack information from it.
+    /// </summary>
     public class ApiMock
     {
         [Fact]

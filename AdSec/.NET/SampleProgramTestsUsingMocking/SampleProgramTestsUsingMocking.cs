@@ -5,10 +5,20 @@ using Xunit;
 
 namespace SampleProgramTestsUsingMocking
 {
+    /// <summary>
+    /// This example shows how to mock API objects so you can
+    /// unit test part of your application.
+    ///
+    /// It tests <see cref="SampleProgram.SampleProgram.IsCrackWidthSatisfactory"/>
+    /// by mocking <see cref="ISolution"/>, <see cref="IServiceabilityResult"/> etc.
+    ///
+    /// You might like to run the 'ApiVersion' example first, just to check
+    /// that the API is installed correctly.
+    /// </summary>
     public class SampleProgramTestsUsingMocking
     {
         [Fact]
-        public void TryMockMethod()
+        public void IsCrackWidthSatisfactory_True_ForSmallCrack()
         {
             // GIVEN we've mocked the AdSec API
             Length length = Length.FromMillimeters(1);

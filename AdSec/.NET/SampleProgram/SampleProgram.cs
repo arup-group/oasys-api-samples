@@ -12,6 +12,17 @@ using Oasys.Units;
 
 namespace SampleProgram
 {
+    /// <summary>
+    /// This example is part of the 'SampleProgramTestsUsingMocking' example.
+    /// The application calls <see cref="SampleProgram.IsCrackWidthSatisfactory"/> to
+    /// check that a section meets a serviceability requirement for a load.
+    ///
+    /// 'SampleProgramTestsUsingMocking' shows how to unit test
+    /// <see cref="SampleProgram.IsCrackWidthSatisfactory"/> by mocking API objects.
+    ///
+    /// You might like to run the 'ApiVersion' example first, just to check
+    /// that the API is installed correctly.
+    /// </summary>
     public static class SampleProgram
     {
         private static void Main()

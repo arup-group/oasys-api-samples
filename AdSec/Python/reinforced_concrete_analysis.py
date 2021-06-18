@@ -14,6 +14,12 @@ from UnitsNet import Force, Length
 from UnitsNet.Units import ForceUnit, LengthUnit
 
 
+# This example shows how to define a reinforced section and analyse it.
+# The example goes on to apply a load and check the utilisation and
+# maximum crack width.
+#
+# You might like to run the 'version.py' example first, just to check
+# that the API is installed correctly.
 def strength_analysis():
     # Create a circular section
     diameter = Length(float(500), LengthUnit.Millimeter)

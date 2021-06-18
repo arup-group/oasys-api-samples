@@ -12,6 +12,14 @@ using Oasys.Units;
 
 namespace ReinforcedConcreteAnalysis
 {
+    /// <summary>
+    /// This example shows how to define a reinforced section and analyse it.
+    /// The example goes on to apply a load and check the utilisation and
+    /// maximum crack width.
+    ///
+    /// You might like to run the 'ApiVersion' example first, just to check
+    /// that the API is installed correctly.
+    /// </summary>
     public static class ReinforcedConcreteAnalysis
     {
         public static void Main()
