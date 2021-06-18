@@ -3,10 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AdSec.API" Version="10.1.0-alpha" />
+    <PackageReference Include="AdSec" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
