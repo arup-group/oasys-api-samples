@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.31112.23
+VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReinforcedConcreteAnalysis", "ReinforcedConcreteAnalysis\ReinforcedConcreteAnalysis.csproj", "{F63AD60B-8359-4CD4-AF57-1EA25E122D97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiVersion", "ApiVersion\ApiVersion.csproj", "{E5565520-5CD3-4533-8909-EDDC39BAC438}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgram", "SampleProgram\SampleProgram.csproj", "{A27FC14D-7474-42BC-9EEB-A7598CC6D60F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgram", "SampleProgram\SampleProgram.csproj", "{5FA72AA2-55EF-400F-9F48-3651668A5A58}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgramTestsUsingMocking", "SampleProgramTestsUsingMocking\SampleProgramTestsUsingMocking.csproj", "{74E79088-46EA-462E-AA1A-294689060545}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgramTestsUsingMocking", "SampleProgramTestsUsingMocking\SampleProgramTestsUsingMocking.csproj", "{FD8700CF-D79A-4D8D-8540-5F762D538E1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,19 +25,19 @@ Global
 		{E5565520-5CD3-4533-8909-EDDC39BAC438}.Debug|x64.Build.0 = Debug|x64
 		{E5565520-5CD3-4533-8909-EDDC39BAC438}.Release|x64.ActiveCfg = Release|x64
 		{E5565520-5CD3-4533-8909-EDDC39BAC438}.Release|x64.Build.0 = Release|x64
-		{A27FC14D-7474-42BC-9EEB-A7598CC6D60F}.Debug|x64.ActiveCfg = Debug|x64
-		{A27FC14D-7474-42BC-9EEB-A7598CC6D60F}.Debug|x64.Build.0 = Debug|x64
-		{A27FC14D-7474-42BC-9EEB-A7598CC6D60F}.Release|x64.ActiveCfg = Release|x64
-		{A27FC14D-7474-42BC-9EEB-A7598CC6D60F}.Release|x64.Build.0 = Release|x64
-		{74E79088-46EA-462E-AA1A-294689060545}.Debug|x64.ActiveCfg = Debug|x64
-		{74E79088-46EA-462E-AA1A-294689060545}.Debug|x64.Build.0 = Debug|x64
-		{74E79088-46EA-462E-AA1A-294689060545}.Release|x64.ActiveCfg = Release|x64
-		{74E79088-46EA-462E-AA1A-294689060545}.Release|x64.Build.0 = Release|x64
+		{5FA72AA2-55EF-400F-9F48-3651668A5A58}.Debug|x64.ActiveCfg = Debug|x64
+		{5FA72AA2-55EF-400F-9F48-3651668A5A58}.Debug|x64.Build.0 = Debug|x64
+		{5FA72AA2-55EF-400F-9F48-3651668A5A58}.Release|x64.ActiveCfg = Release|x64
+		{5FA72AA2-55EF-400F-9F48-3651668A5A58}.Release|x64.Build.0 = Release|x64
+		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Debug|x64.ActiveCfg = Debug|x64
+		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Debug|x64.Build.0 = Debug|x64
+		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Release|x64.ActiveCfg = Release|x64
+		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {E8230E16-7AC5-4DDA-8E92-2C958FC5C73D}
+		SolutionGuid = {1B5D35C9-37F4-432D-B188-4B2C7BDF9CCF}
 	EndGlobalSection
 EndGlobal

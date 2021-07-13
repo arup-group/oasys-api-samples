@@ -1,4 +1,4 @@
-using Moq;
+﻿using Moq;
 using Oasys.AdSec;
 using UnitsNet;
 using Xunit;
