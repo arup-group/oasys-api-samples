@@ -24,21 +24,39 @@ namespace ReinforcedConcreteAnalysis
     {
         public static void Main()
         {
-            // Create a circular section
-            var profile = ICircleProfile.Create(Length.FromMillimeters(500));
+            // Create a rectangular section
+            var profile = IRectangleProfile.Create(Length.FromMillimeters(800), Length.FromMillimeters(400));
             IConcrete sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.C40_50;
             var section = ISection.Create(profile, sectionMaterial);
 
+            // Set the cover
+            section.Cover = ICover.Create(Length.FromMillimeters(40));
+
             // Set some reinforcement
             IReinforcement reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.S500B;
-            IBarBundle barBundle = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(32));
-            ILayer layer = ILayerByBarCount.Create(4, barBundle);
-            ILongitudinalGroup group = ILineGroup.Create(
-                IPoint.Create(Length.Zero, Length.Zero),
-                IPoint.Create(Length.FromMillimeters(150),
-                Length.FromMillimeters(150)),
-                layer);
-            section.ReinforcementGroups.Add(group);
+            IBarBundle bar20mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(20));
+            IBarBundle bar16mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(16));
+            IBarBundle bar12mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(12));
+
+            // Define top reinforcement
+            ILayer topLayer = ILayerByBarCount.Create(4, bar16mm);
+            ITemplateGroup topReinforcement = ITemplateGroup.Create(ITemplateGroup.Face.Top);
+            topReinforcement.Layers.Add(topLayer);
+
+            // Define bottom reinforcement
+            ILayer bottomLayerOne = ILayerByBarCount.Create(4, bar20mm);
+            ILayer bottomLayerTwo = ILayerByBarCount.Create(4, bar16mm);
+            ITemplateGroup bottomReinforcement = ITemplateGroup.Create(ITemplateGroup.Face.Bottom);
+            bottomReinforcement.Layers.Add(bottomLayerOne);
+            bottomReinforcement.Layers.Add(bottomLayerTwo);
+
+            // Define link (stirrup)
+            ILinkGroup link = ILinkGroup.Create(bar12mm);
+
+            // Add defined reinforcement groups to section
+            section.ReinforcementGroups.Add(topReinforcement);
+            section.ReinforcementGroups.Add(bottomReinforcement);
+            section.ReinforcementGroups.Add(link);
 
             // Analyse the section to create a solution
             var adSec = IAdSec.Create(EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014);
@@ -46,7 +64,7 @@ namespace ReinforcedConcreteAnalysis
 
             // Calculate utilisation for a particular load
             var axialForce = Force.FromKilonewtons(-100);
-            var majorAxisBending = Moment.FromKilonewtonMeters(60);
+            var majorAxisBending = Moment.FromKilonewtonMeters(-500);
             var minorAxisBending = Moment.Zero;
             var load = ILoad.Create(axialForce, majorAxisBending, minorAxisBending);
             IStrengthResult strengthResult = solution.Strength.Check(load);

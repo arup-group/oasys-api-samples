@@ -5,9 +5,9 @@ import oasys.adsec
 from Oasys.AdSec import IAdSec, ISection, ILoad
 from Oasys.AdSec.DesignCode import EN1992
 from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
-from Oasys.Profiles import ICircleProfile, IPoint
-from Oasys.AdSec.Reinforcement import IBarBundle
-from Oasys.AdSec.Reinforcement.Groups import ILineGroup
+from Oasys.Profiles import IRectangleProfile
+from Oasys.AdSec.Reinforcement import ICover, IBarBundle
+from Oasys.AdSec.Reinforcement.Groups import ITemplateGroup, ILinkGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarCount
 from Oasys.Units import Moment, MomentUnit
 from UnitsNet import Force, Length
@@ -21,20 +21,41 @@ from UnitsNet.Units import ForceUnit, LengthUnit
 # You might like to run the 'version.py' example first, just to check
 # that the API is installed correctly.
 def strength_analysis():
-    # Create a circular section
-    diameter = Length(float(500), LengthUnit.Millimeter)
-    profile = ICircleProfile.Create(diameter)
+    # Create a rectangular section
+    depth = Length(float(800), LengthUnit.Millimeter)
+    width = Length(float(400), LengthUnit.Millimeter)
+    profile = IRectangleProfile.Create(depth, width)
     sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.C40_50
     section = ISection.Create(profile, sectionMaterial)
 
+    # Set the cover
+    section.Cover = ICover.Create(Length(float(40), LengthUnit.Millimeter))
+
     # Set some reinforcement
     reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.S500B
-    barDiameter = Length(float(32), LengthUnit.Millimeter)
-    barBundle = IBarBundle.Create(reinforcementMaterial, barDiameter)
-    layer = ILayerByBarCount.Create(4, barBundle)
-    position = Length(float(150), LengthUnit.Millimeter)
-    group = ILineGroup.Create(IPoint.Create(Length.Zero, Length.Zero), IPoint.Create(position, position), layer)
-    section.ReinforcementGroups.Add(group)
+    bar20mm = IBarBundle.Create(reinforcementMaterial, Length(float(20), LengthUnit.Millimeter))
+    bar16mm = IBarBundle.Create(reinforcementMaterial, Length(float(16), LengthUnit.Millimeter))
+    bar12mm = IBarBundle.Create(reinforcementMaterial, Length(float(12), LengthUnit.Millimeter))
+
+    # Define top reinforcement
+    layerForTopGroup = ILayerByBarCount.Create(4, bar16mm)
+    topGroup = ITemplateGroup.Create(ITemplateGroup.Face.Top)
+    topGroup.Layers.Add(layerForTopGroup)
+
+    # Define bottom reinforcement
+    layerOneForBottomGroup = ILayerByBarCount.Create(4, bar20mm)
+    layerTwoForBottomGroup = ILayerByBarCount.Create(4, bar16mm)
+    bottomGroup = ITemplateGroup.Create(ITemplateGroup.Face.Bottom)
+    bottomGroup.Layers.Add(layerOneForBottomGroup)
+    bottomGroup.Layers.Add(layerTwoForBottomGroup)
+
+    # Define link (stirrup)
+    link = ILinkGroup.Create(bar12mm)
+
+    # Add defined reinforcement groups to section
+    section.ReinforcementGroups.Add(topGroup)
+    section.ReinforcementGroups.Add(bottomGroup)
+    section.ReinforcementGroups.Add(link)
 
     # Analyse the section to create a solution
     adSec = IAdSec.Create(EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014)
@@ -42,7 +63,7 @@ def strength_analysis():
 
     # Calculate utilisation for a particular load
     axialForce = Force(float(-100), ForceUnit.Kilonewton)
-    majorAxisBending = Moment(float(60), MomentUnit.KilonewtonMeter)
+    majorAxisBending = Moment(float(-500), MomentUnit.KilonewtonMeter)
     minorAxisBending = Moment.Zero
     load = ILoad.Create(axialForce, majorAxisBending, minorAxisBending)
     strengthResult = solution.Strength.Check(load)
