@@ -4,7 +4,7 @@ This is an example console application that uses the GSA .NET API to output CSV 
 ## Usage
 The example application (once compiled) takes two command line arguments:
 - `--input-file` (or simply `-i`) to specify the GSA file to open
-- `output-directory1 (or `o`) to specify the directoy to save the output CSV
+- `output-directory` (or `o`) to specify the directoy to save the output CSV
 
 An example run might look something like this:
 ```
