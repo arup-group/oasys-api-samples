@@ -24,6 +24,7 @@ from gsapy import GSA
 
 dead_load = 3.0  # kN/m^2
 live_load = 5.0  # kN/m^2
+# add additional variables as necessary to control what is added to Compos
 
 
 def gsa2compos2gsa():
