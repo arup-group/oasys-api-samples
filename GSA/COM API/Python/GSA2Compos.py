@@ -117,11 +117,7 @@ def gsa2compos2gsa():
     compos_model.Close()
     print("  Compos model closed")
 
-    print("Opening GSA model")
-    gsa_model = GSA(r'C:\Temp\Composite test.gwb', version='10.1')
-    for i in range(len(compos_results)):
-        member_number = int(compos_results[i][0])
-        member_new_section = compos_results[i][1].split()[2]
+    for member_number, member_new_section in compos_results:
         new_section = sections_dictionary[member_new_section]
         # gets section number of Compos
         # result
