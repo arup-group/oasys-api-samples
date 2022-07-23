@@ -28,8 +28,6 @@ live_load = 5.0  # kN/m^2
 
 
 def gsa2compos2gsa():
-    global dead_load
-    global live_load
 
     # get GSA data
     print("Opening GSA model")
