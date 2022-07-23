@@ -103,12 +103,14 @@ def gsa2compos2gsa():
     compos_model = win32com.client.Dispatch("Compos.Automation")
     compos_model.Open(gettempdir() + '\\compos_file.csv')
     compos_results = []
-    for i in range(len(member_list)):
+    
+    for i, m in enumerate(member_list):
         member_name = compos_model.MemberName(i)
+        old_section = compos_model.BeamSectDesc(member_name)
         compos_model.Design(member_name)
         section = compos_model.BeamSectDesc(member_name)
-        print(member_name, section)
-        compos_results.append([member_name[7:], section])
+        print(f"{member_name}: {old_section} -> {section}")
+        compos_results.append([int(member_name[7:]), section])
         # member[7:] strips "MEMBER-"
     compos_model.Save()
     # compos_model.SaveAs(gettempdir() + '\\compos_file_results.csv')
