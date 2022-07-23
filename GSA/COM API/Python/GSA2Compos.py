@@ -33,20 +33,13 @@ def gsa2compos2gsa():
     print("Opening GSA model")
     gsa_model = GSA(r'Composite test.gwb', version='10.1')
 
-    # gets the members from the first saved list
-    search_list = \
-        str(gsa_model.get_all_saved_lists()[0]).split("\t")[4].split(" ")
-    member_list = []
-    for i in search_list:  # create list of members to be designed
-        member = str(gsa_model.get_members(int(i)))
-        member_section = int(member.split("\t")[6])
-        member_list.append([int(i), gsa_model.get_section_info(member_section),
-                            gsa_model.get_member_length(int(i))])
-    sections_dictionary = {}
-    for i in range(1, 93):  # create sections dictionary:  needs to match model
-        sections_dictionary[gsa_model.get_section_info(i)] = i
-    gsa_model.close()
-    print("  GSA model closed")
+#    member_list = [[i, gsa_model.get_section_info(i), gsa_model.get_member_length(i)] for i in gsa_model._get_entities_in_named_list("Secondary beams")]
+    members = gsa_model.get_members(gsa_model._get_entities_in_named_list("Secondary beams"))
+    sections = gsa_model.get(Section)
+
+    member_list = [[i, sections[m.prop].desc.replace("%"," "), gsa_model.get_member_length(i)] for i, m in members.items()]
+
+    sections_dictionary = {s.desc.replace("%", " "): i for i, s in sections.items()}
 
     # create Compos file
     print("Creating Compos file")
