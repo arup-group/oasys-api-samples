@@ -16,6 +16,7 @@ import win32com.client  # https://pypi.org/project/pywin32/
 from datetime import datetime
 from tempfile import gettempdir
 from gsapy import GSA
+from gsapy.modules import Member, Section
 
 # gsapy references
 # https://gitlab.arup.com/david.dekoning/gsapy/-/blob/master/docs/readme.rst
