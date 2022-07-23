@@ -124,7 +124,8 @@ def gsa2compos2gsa():
         member = gsa_model.get_members(member_number)
         member.prop = new_section
         gsa_model.set(member)
-    gsa_model.save()
+    
+    gsa_model.save_as("Composite test designed.gwb")
     gsa_model.close()
     print("  GSA model closed")
 
