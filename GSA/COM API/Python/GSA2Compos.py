@@ -31,7 +31,7 @@ def gsa2compos2gsa():
 
     # get GSA data
     print("Opening GSA model")
-    gsa_model = GSA(r'C:\Temp\Composite test.gwb', version='10.1')
+    gsa_model = GSA(r'Composite test.gwb', version='10.1')
 
     # gets the members from the first saved list
     search_list = \
