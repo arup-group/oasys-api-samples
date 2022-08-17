@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReinforcedConcreteAnalysis", "ReinforcedConcreteAnalysis\ReinforcedConcreteAnalysis.csproj", "{F63AD60B-8359-4CD4-AF57-1EA25E122D97}"
 EndProject
@@ -10,6 +10,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgram", "SampleProgram\SampleProgram.csproj", "{5FA72AA2-55EF-400F-9F48-3651668A5A58}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleProgramTestsUsingMocking", "SampleProgramTestsUsingMocking\SampleProgramTestsUsingMocking.csproj", "{FD8700CF-D79A-4D8D-8540-5F762D538E1A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdsToApi", "AdsToApi\AdsToApi.csproj", "{78C48E48-E70A-4CE9-8C38-0885C293F648}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiToAds", "ApiToAds\ApiToAds.csproj", "{8C6CFBE0-F16B-432D-BC55-BEBF9E6B601D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaveSectionImage", "SaveSectionImage\SaveSectionImage.csproj", "{783B4A2C-477D-4C05-9AC5-EE1644BE5245}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +39,18 @@ Global
 		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Debug|x64.Build.0 = Debug|x64
 		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Release|x64.ActiveCfg = Release|x64
 		{FD8700CF-D79A-4D8D-8540-5F762D538E1A}.Release|x64.Build.0 = Release|x64
+		{78C48E48-E70A-4CE9-8C38-0885C293F648}.Debug|x64.ActiveCfg = Debug|x64
+		{78C48E48-E70A-4CE9-8C38-0885C293F648}.Debug|x64.Build.0 = Debug|x64
+		{78C48E48-E70A-4CE9-8C38-0885C293F648}.Release|x64.ActiveCfg = Release|x64
+		{78C48E48-E70A-4CE9-8C38-0885C293F648}.Release|x64.Build.0 = Release|x64
+		{8C6CFBE0-F16B-432D-BC55-BEBF9E6B601D}.Debug|x64.ActiveCfg = Debug|x64
+		{8C6CFBE0-F16B-432D-BC55-BEBF9E6B601D}.Debug|x64.Build.0 = Debug|x64
+		{8C6CFBE0-F16B-432D-BC55-BEBF9E6B601D}.Release|x64.ActiveCfg = Release|x64
+		{8C6CFBE0-F16B-432D-BC55-BEBF9E6B601D}.Release|x64.Build.0 = Release|x64
+		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Debug|x64.ActiveCfg = Debug|x64
+		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Debug|x64.Build.0 = Debug|x64
+		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Release|x64.ActiveCfg = Release|x64
+		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
