@@ -86,6 +86,7 @@ def new_circle_section(diameter, cover=30):
 
 
 def add_links(diameter):
+    global section
     global bar_material
     bar_dia = Length(float(diameter), LengthUnit.Millimeter)
     rebar = ILinkGroup.Create(IBarBundle.Create(bar_material, bar_dia))
@@ -93,6 +94,7 @@ def add_links(diameter):
 
 
 def add_perimeter_bars(diameter, number):
+    global section
     global bar_material
     bar_dia = Length(float(diameter), LengthUnit.Millimeter)
     rebar = IPerimeterGroup.Create()
@@ -103,6 +105,7 @@ def add_perimeter_bars(diameter, number):
 
 
 def add_top_bars(diameter, number):
+    global section
     global bar_material
     bar_dia = Length(float(diameter), LengthUnit.Millimeter)
     rebar = ITemplateGroup.Create(ITemplateGroup.Face.Top)
@@ -113,6 +116,7 @@ def add_top_bars(diameter, number):
 
 
 def add_bottom_bars(diameter, number):
+    global section
     global bar_material
     bar_dia = Length(float(diameter), LengthUnit.Millimeter)
     rebar = ITemplateGroup.Create(ITemplateGroup.Face.Bottom)
@@ -123,6 +127,7 @@ def add_bottom_bars(diameter, number):
 
 
 def add_side_bars(diameter, spacing):
+    global section
     global bar_material
     bar_dia = Length(float(diameter), LengthUnit.Millimeter)
     bar_spacing = Length(float(spacing), LengthUnit.Millimeter)
@@ -148,7 +153,6 @@ def section_analyse(force=0, moment_yy=0, moment_zz=0):
     global design_code
     global uls_deformation
     global sls_deformation
-
     print("\nAnalyse section")
     solution = IAdSec.Create(design_code).Analyse(section)
     strength_results = solution.Strength
