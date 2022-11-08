@@ -9,9 +9,8 @@ from Oasys.Profiles import IRectangleProfile
 from Oasys.AdSec.Reinforcement import ICover, IBarBundle
 from Oasys.AdSec.Reinforcement.Groups import ITemplateGroup, ILinkGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarCount
-from Oasys.Units import Moment, MomentUnit
-from UnitsNet import Force, Length
-from UnitsNet.Units import ForceUnit, LengthUnit
+from OasysUnits import Force, Length, Moment
+from OasysUnits.Units import ForceUnit, LengthUnit, MomentUnit
 
 
 # This example shows how to define a reinforced section and analyse it.

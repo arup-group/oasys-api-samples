@@ -8,7 +8,7 @@ using Oasys.AdSec.Reinforcement;
 using Oasys.AdSec.Reinforcement.Groups;
 using Oasys.AdSec.Reinforcement.Layers;
 using Oasys.AdSec.IO.Graphics.Section;
-using UnitsNet;
+using OasysUnits;
 
 namespace SaveSectionImage
 {
