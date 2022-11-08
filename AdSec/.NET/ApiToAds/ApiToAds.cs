@@ -5,7 +5,7 @@ using Oasys.Collections;
 using Oasys.AdSec.Materials;
 using Oasys.AdSec.StandardMaterials;
 using Oasys.Profiles;
-using Oasys.Units;
+using OasysUnits;
 using Oasys.AdSec.DesignCode;
 
 
@@ -23,7 +23,7 @@ namespace ApiToAds
         {
             // Create API section 
             IConcrete C30 = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.PD6687.Edition_2010.C30_37;
-            ICircleProfile circle_profile = ICircleProfile.Create(UnitsNet.Length.FromMillimeters(1000));
+            ICircleProfile circle_profile = ICircleProfile.Create(Length.FromMillimeters(1000));
             ISection section = ISection.Create(circle_profile, C30);
 
             // Use JsonConverter's SectionToJson method to obtain the JSON string 
@@ -34,8 +34,8 @@ namespace ApiToAds
             System.IO.File.WriteAllText("adsec_section.ads", json);
 
             // To save a section with loads (or deformation) 
-            Oasys.AdSec.ILoad load_one = ILoad.Create(UnitsNet.Force.FromKilonewtons(-10), Moment.Zero, Moment.Zero);
-            Oasys.AdSec.ILoad load_two = ILoad.Create(UnitsNet.Force.FromKilonewtons(-15), Moment.Zero, Moment.Zero);
+            Oasys.AdSec.ILoad load_one = ILoad.Create(Force.FromKilonewtons(-10), Moment.Zero, Moment.Zero);
+            Oasys.AdSec.ILoad load_two = ILoad.Create(Force.FromKilonewtons(-15), Moment.Zero, Moment.Zero);
             Oasys.Collections.IList<ILoad> load_list = Oasys.Collections.IList<ILoad>.Create();
             load_list.Add(load_one);
             load_list.Add(load_two);

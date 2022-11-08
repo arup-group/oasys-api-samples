@@ -10,8 +10,8 @@ from Oasys.AdSec.Reinforcement import ICover, IBarBundle
 from Oasys.AdSec.Reinforcement.Groups import ILinkGroup, IPerimeterGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarPitch
 from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
-from UnitsNet import Length
-from UnitsNet.Units import LengthUnit
+from OasysUnits import Length
+from OasysUnits.Units import LengthUnit
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 

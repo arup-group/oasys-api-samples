@@ -1,6 +1,6 @@
 ﻿using Moq;
 using Oasys.AdSec;
-using UnitsNet;
+using OasysUnits;
 using Xunit;
 
 namespace SampleProgramTestsUsingMocking
