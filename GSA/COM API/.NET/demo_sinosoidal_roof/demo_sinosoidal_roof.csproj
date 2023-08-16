@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>demo_sinosoidal_roof</RootNamespace>
     <AssemblyName>demo_sinosoidal_roof</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -58,8 +58,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.Gsa_9_0">
-      <HintPath>C:\Program Files\Oasys\GSA 10.0\Interop.Gsa_10_0.dll</HintPath>
+    <Reference Include="Interop.Gsa_10_2">
+      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_2.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />

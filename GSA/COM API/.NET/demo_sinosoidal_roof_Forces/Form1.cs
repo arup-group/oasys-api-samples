@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Interop.Gsa_10_0;
+using Interop.Gsa_10_2;
 using Oasys.Gsa.DotNetHelpers;
 
 namespace demo_sinosoidal_roof_Forces

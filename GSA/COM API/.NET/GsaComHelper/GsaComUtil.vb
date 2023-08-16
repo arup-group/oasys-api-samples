@@ -7,6 +7,7 @@ Imports System.Reflection
 Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.Linq
+Imports System.Text.RegularExpressions
 Public Class GsaComUtil
 
     Const RoundPrecision As Integer = 6 'precision for rounding real numbers
@@ -16,13 +17,23 @@ Public Class GsaComUtil
     Private _EleList As Dictionary(Of Integer, MemberElement)
     Private _EleListExist As Dictionary(Of Integer, Boolean)
     Private _MemListExist As Dictionary(Of Integer, Boolean)
-    Private _LineList As Dictionary(Of Integer, GSALine)
-    Private _LineListExist As Dictionary(Of Integer, Boolean)
     Private _IsHoz As Dictionary(Of Integer, Boolean)
     Private _IsVet As Dictionary(Of Integer, Boolean)
     Private _SecList As Dictionary(Of Integer, GSASection)
     Private _SecListExist As Dictionary(Of Integer, Boolean)
-    Private _Connection As Dictionary(Of String, Integer)
+    Private _Connection As Dictionary(Of Integer, String)
+    Enum RefPt
+        CENTROID = 0
+        TOP_LEFT
+        TOP_CENTRE
+        TOP_RIGHT
+        MIDDLE_LEFT
+        DUMMY
+        MIDDLE_RIGHT
+        BOTTOM_LEFT
+        BOTTOM_CENTRE
+        BOTTOM_RIGHT
+    End Enum
     Enum AreaType
         VOID = 1
         TWO_WAY = 2
@@ -33,6 +44,7 @@ Public Class GsaComUtil
         LINEAR
     End Enum
     Enum GridPlaneType
+        UNDEF = -1
         STOREY = 0
         GENERAL = 1
     End Enum
@@ -43,12 +55,11 @@ Public Class GsaComUtil
         SEL_REGION = 8
     End Enum
     Enum GridLoadType
+        UNDEF = -1
         AREA = 0
         LINE = 1
         POINT = 3
     End Enum
-
-
     Enum ElemType
         EL_UNDEF = 0
         EL_BEAM = 201
@@ -74,14 +85,16 @@ Public Class GsaComUtil
         GENERIC_2D = 1
         BEAM = 2
         COLUMN = 3
-        CANTILEVER = 4
-        PILE = 5
-        SLAB = 6
+        SLAB = 4
+        WALL = 5
+        CANTILEVER = 6
         RIBSLAB = 7
         COMPOS = 8
-        WALL = 9
+        PILE = 9
         EXPLICIT = 10
-
+        VOID_CUTTER_1D = 11
+        VOID_CUTTER_2D = 12
+        GENERIC_3D = 13
     End Enum
     Public Enum Type2D
         UNDEF = 0
@@ -96,24 +109,75 @@ Public Class GsaComUtil
         WALL = 9
         LOAD = 10
     End Enum
+    Public Function Type2DFromStr(ByVal mType As String) As Type2D
+        mType = mType.ToUpper()
+        Select Case mType
+            Case "UNDEF"
+                Return Type2D.UNDEF
+            Case "PL_STRESS"
+                Return Type2D.PL_STRESS
+            Case "PL_STRAIN"
+                Return Type2D.PL_STRAIN
+            Case "AXISYMMETRIC"
+                Return Type2D.AXISYMMETRIC
+            Case "FABRIC"
+                Return Type2D.FABRIC
+            Case "PLATE"
+                Return Type2D.PLATE
+            Case "SHELL"
+                Return Type2D.SHELL
+            Case "CURVED_SHELL"
+                Return Type2D.CURVED_SHELL
+            Case "TORSION"
+                Return Type2D.TORSION
+            Case "WALL"
+                Return Type2D.WALL
+            Case "LOAD"
+                Return Type2D.LOAD
+            Case Else
+                Return Type2D.UNDEF
+        End Select
+    End Function
     Public Function MembTypeStr(ByVal mType As MembType) As String
         Return mType.ToString()
     End Function
     Public Function MembTypeFromStr(ByVal mType As String) As MembType
+        mType = mType.ToUpper()
         Select Case mType
-            Case "BEAM"
+            Case "UNDEF"
+                Return MembType.UNDEF
             Case "GENERIC_1D"
+            Case "1D_GENERIC"
+                Return MembType.GENERIC_1D
+            Case "GENERIC_2D"
+            Case "2D_GENERIC"
+                Return MembType.GENERIC_2D
+            Case "GENERIC_3D"
+                Return MembType.GENERIC_3D
+            Case "BEAM"
                 Return MembType.BEAM
+            Case "COLUMN"
+                Return MembType.COLUMN
             Case "SLAB"
                 Return MembType.SLAB
             Case "WALL"
                 Return MembType.WALL
-            Case "COLUMN"
-                Return MembType.COLUMN
-            Case "PERIM"
-                Return MembType.SLAB
+            Case "CANTILEVER"
+                Return MembType.CANTILEVER
+            Case "RIBSLAB"
+                Return MembType.RIBSLAB
+            Case "COMPOS"
+                Return MembType.COMPOS
             Case "PILE"
                 Return MembType.PILE
+            Case "EXPLICIT"
+                Return MembType.EXPLICIT
+            Case "VOID_CUTTER_1D"
+                Return MembType.VOID_CUTTER_1D
+            Case "VOID_CUTTER_2D"
+                Return MembType.VOID_CUTTER_2D
+            Case "VOID_CUTTER_1D"
+                Return MembType.GENERIC_3D
             Case Else
                 Return MembType.UNDEF
         End Select
@@ -124,22 +188,6 @@ Public Class GsaComUtil
         PERIM = 2
         UNDEF = 3
     End Enum
-    Public Function MembLayoutStr(ByVal mType As MembBarLayout) As String
-        Return mType.ToString()
-    End Function
-    Public Function MembLayoutFromStr(ByVal mType As String) As MembBarLayout
-        Select Case mType
-            Case "BEAM"
-                Return MembBarLayout.BEAM
-            Case "COLUMN"
-                Return MembBarLayout.COLUMN
-            Case "PERIM"
-                Return MembBarLayout.PERIM
-            Case Else
-                Return MembBarLayout.UNDEF
-        End Select
-    End Function
-
     Public Enum MembMat
         UNDEF = -1
         STEEL = 1
@@ -211,14 +259,18 @@ Public Class GsaComUtil
         METRIC = GsRevit_Units.METRIC
     End Enum
 
+    Public Structure ToMilliMeter
+        public Shared FromMeter As Double = 1000.0
+        public Shared FromFeet As Double = 304.8
+        public Shared FromInch As Double = 25.4
+        public Shared FromCentimeter As Double = 10.0
+    End Structure
+
     'GSA object
     Private m_GSAObject As ComAuto
     Private m_eSelType As EntType
     Private m_eUnit As GsRevit_Units ' Units of the REVIT MODEL!! Careful
     Public m_cfactor As Double = 1
-    Public m_cfLength As Double = 1
-    ' Public m_cfactor As Double = 1
-
     Public Sub New()
         Try
             m_GSAObject = New ComAuto()
@@ -235,8 +287,6 @@ Public Class GsaComUtil
         _MemListExist = New Dictionary(Of Integer, Boolean)
         _IsHoz = New Dictionary(Of Integer, Boolean)
         _IsVet = New Dictionary(Of Integer, Boolean)
-        _LineList = New Dictionary(Of Integer, GSALine)
-        _LineListExist = New Dictionary(Of Integer, Boolean)
         _SecList = New Dictionary(Of Integer, GSASection)
         _SecListExist = New Dictionary(Of Integer, Boolean)
         ' we parse using the EN_GB locale
@@ -330,43 +380,19 @@ Public Class GsaComUtil
         m_GSAObject.MappingDBPath(cPath)
         Return cPath
     End Function
-    Public Function RevitFamilyToSection(ByVal familyName As String, ByVal familyType As String, ByVal usage As SectionUsage) As String
-        Dim gsrevit_usage As GsRevit_Usage = gsrevit_usage.FRAMING
+    Public Function RevitFamilyToSection(ByVal familyType As String, ByVal revitFamily As String, ByVal usage As SectionUsage) As String
+        Dim gsrevit_usage As GsRevit_Usage = GsRevit_Usage.FRAMING
         If SectionUsage.COLUMNS = usage Then
-            gsrevit_usage = gsrevit_usage.COLUMNS
+            gsrevit_usage = GsRevit_Usage.COLUMNS
         End If
-        Return m_GSAObject.Gen_SectTransltnGsRevit(familyName, GsRevit_SectTrnsDir.REVIT_TO_GSA, gsrevit_usage, familyType)
+        Return m_GSAObject.Gen_SectTransltnGsRevit(familyType, GsRevit_SectTrnsDir.REVIT_TO_GSA, gsrevit_usage, revitFamily)
     End Function
-    Public Function RevitFamilyToSectionUsingCSV(ByVal familyName As String, ByVal familyType As String, ByVal usage As SectionUsage) As String
-        '<Revit family name>, <GSA section shape>,<name of Revit attribute holding dim 1>,< name of Revit attribute holding dim 2>,…
-        '“my rect family”,”R”,”h”,”b”
-        '“my rect hollow family”,”RHS”,”h”,”b”,”t”,”T”
-        Dim GsaSecDesc As String = ""
-        Using reader As New CsvFileReader("C:\\Test.csv")
-            Dim row As New CsvRow()
-            While reader.ReadRow(row)
-                If row(0).Equals(familyName) Then
-                    Dim shape As String = row(1).ToString()
-                    Select Case shape
-                        Case "R"
-                            GsaSecDesc = "STD " + shape + " " + row(1) + " " + row(2)
-                        Case "RHS"
-                            'write code
-                        Case "C"
-                            'write code
-                        Case "CHS"
-                            'write code
-                    End Select
-                End If
-            End While
-        End Using
-        Return ""
-    End Function
+
     Public Function IsDescValid(ByVal sDes As String) As Boolean
         If String.IsNullOrEmpty(sDes) Then
             Return False
         End If
-        Dim strOut As String = m_GSAObject.Gen_SectionMatchDesc(sDes, 1, False)
+        Dim strOut As String = m_GSAObject.Gen_SectionMatchDesc(sDes, SectionMatch_Flags.BOTH, False)
         If String.IsNullOrEmpty(strOut) Then
             Return False
         End If
@@ -387,30 +413,23 @@ Public Class GsaComUtil
         If Not String.IsNullOrEmpty(familyType) And Not String.IsNullOrEmpty(familyName) Then
             bFamilyTypeFound = True
         Else
+            'i.e. 5.0 should be same as 5
+            Dim newGsaDesc As String = gsaDesc
+            If Not newGsaDesc.Contains(".0") Then
+                newGsaDesc = newGsaDesc + ".0"
+            Else
+                newGsaDesc = newGsaDesc.Replace(".0", "")
+            End If
+            familyType = m_GSAObject.Gen_SectTransltnGsRevit(newGsaDesc, GsRevit_SectTrnsDir.GSA_TO_REVIT, gsrevit_usage, familyName)
+            If Not String.IsNullOrEmpty(familyType) And Not String.IsNullOrEmpty(familyName) Then
+                bFamilyTypeFound = True
+                Return familyType
+            End If
             familyType = TrySNFamilies(gsaDesc, usage, bFamilyTypeFound, familyName)
         End If
         Return familyType
     End Function
-    Public Function SectionToRevitFamily(ByVal gsaDesc As String,
-                                        ByVal usage As SectionUsage,
-                                        ByRef familyName As String,
-                                        ByRef bFamilyTypeFound As Boolean, ByRef bFamilyFromTrial As Boolean) As String
-        Dim familyType As String = ""
-        Dim gsrevit_usage As GsRevit_Usage = gsrevit_usage.FRAMING
-        If SectionUsage.COLUMNS = usage Then
-            gsrevit_usage = gsrevit_usage.COLUMNS
-        End If
-        familyName = ""
-        familyType = m_GSAObject.Gen_SectTransltnGsRevit(gsaDesc, GsRevit_SectTrnsDir.GSA_TO_REVIT, gsrevit_usage, familyName)
-        If Not String.IsNullOrEmpty(familyType) And Not String.IsNullOrEmpty(familyName) Then
-            bFamilyTypeFound = True
-            bFamilyFromTrial = False
-        Else
-            familyType = TrySNFamilies(gsaDesc, usage, bFamilyTypeFound, familyName)
-            bFamilyFromTrial = True
-        End If
-        Return familyType
-    End Function
+
     Private Function TrySNFamilies(ByVal desc As String, ByVal usage As GsaComUtil.SectionUsage, ByRef familyTypeFound As Boolean, ByRef familyName As String) As String
         Dim parts As String() = Nothing
         parts = desc.Split(New [Char]() {"%"c, " "c}, StringSplitOptions.RemoveEmptyEntries)
@@ -466,26 +485,6 @@ Public Class GsaComUtil
         iNode = Me.m_GSAObject.Gen_NodeAt(dX, dY, dZ, dCoincidenceTol)
         Return iNode
     End Function
-    Public Sub SetGridNode(ByVal iNode As Integer, ByVal iGrid As Integer)
-        'NODE_GRID | ref | name | grid plane | grid | grid line a | grid line b | edge length | radius | column rigidity
-        'NODE_GRID	77	a	0	ORIGIN			0.000000	0.000000	NO
-
-        'NODE.2 | num | name | colour | x | y | z |
-        '   is_grid { | grid_plane | datum | grid_line_a | grid_line_b } | axis |
-        '   is_rest { | rx | ry | rz | rxx | ryy | rzz } |
-        '   is_stiff { | Kx | Ky | Kz | Kxx | Kyy | Kzz } |
-        '   is_mesh { | edge_length | radius | column_rigidity | column_prop | column_node | column_angle | column_factor | column_slab_factor }
-
-        'Dim sGwaCommand As String = "NODE_GRID,"
-        'sGwaCommand += iNode.ToString() + ","
-        'sGwaCommand += "" + ","                     'Name
-        'sGwaCommand += ",NO_RGB"                    'colour
-        'sGwaCommand += iGrid.ToString() + ","       'Global grid
-        'sGwaCommand += "ORIGIN,,,"                  'Grid lines
-        'sGwaCommand += "0.0,0.0,NO"
-        'm_GSAObject.GwaCommand(sGwaCommand)
-
-    End Sub
     Public Function BlankElement(ByVal iELem As Integer) As Boolean
         Dim gwaCommand As String
         gwaCommand = "BLANK,EL," + iELem.ToString()
@@ -499,93 +498,93 @@ Public Class GsaComUtil
         Return True
     End Function
     Public Sub ChangeUnits(ByRef dData() As Double)
-        dData(0) = Math.Round(dData(0) * m_cfLength, 4)
-        dData(1) = Math.Round(dData(1) * m_cfLength, 4)
-        dData(2) = Math.Round(dData(2) * m_cfLength, 4)
+        dData(0) = Math.Round(dData(0) * m_cfactor, 4)
+        dData(1) = Math.Round(dData(1) * m_cfactor, 4)
+        dData(2) = Math.Round(dData(2) * m_cfactor, 4)
     End Sub
 
 
     Public Sub ChangeUnits(ByRef dData As Double)
-        dData = Math.Round(dData * m_cfLength, 4)
+        dData = Math.Round(dData * m_cfactor, 4)
     End Sub
-    Public Sub ExtractNodeCoor(ByVal strNode As String, ByRef x As Double, ByRef y As Double, ByRef z As Double)
+    Public Sub ExtractNodeCoor(ByVal iNode As Integer, ByRef x As Double, ByRef y As Double, ByRef z As Double)
 
-        Dim iNode As Integer
+        Dim SIToFeet As Double = 3.28084
         'initialize the coords to 0 first
         x = 0
         y = 0
         z = 0
-        If Not (Integer.TryParse(strNode, iNode)) Then
-            Exit Sub
-        End If
+
         Dim check As Object
         Dim gwaCommand As String
-        gwaCommand = "EXIST,NODE," + strNode
+        gwaCommand = "EXIST,NODE," + iNode.ToString()
         check = m_GSAObject.GwaCommand(gwaCommand)
         Dim iCheck As Integer = CType(check, Integer)
         If 1 = iCheck Then
             m_GSAObject.NodeCoor(iNode, x, y, z)
         End If
-        'change SI unit to user unit
-        x = x * m_cfactor
-        y = y * m_cfactor
-        z = z * m_cfactor
+        'change SI unit to user unit as NodeCord function return in SI unit
+        x = x * SIToFeet / m_cfactor
+        y = y * SIToFeet / m_cfactor
+        z = z * SIToFeet / m_cfactor
 
     End Sub
-    Public Function ExtractInterMediateNodeCoorOnCurve(ByVal strMembRef As String, Optional ByVal mem As Boolean = True) As Double()
+    Public Function ExtractNodeCoor(ByVal iNode As Integer) As Double()
 
-        Dim iMemb As Integer
+        Dim SIToFeet As Double = 3.28084
         'initialize the coords to 0 first
         Dim dbNoderCord() As Double = {0.0, 0.0, 0.0}
-        If Not (Integer.TryParse(strMembRef, iMemb)) Then
-            Return dbNoderCord
-        End If
-        Dim check As String = ""
-        If mem Then
-            check = CStr(m_GSAObject.GwaCommand("GET,MEMB," & strMembRef))
-
-        Else
-            check = CStr(m_GSAObject.GwaCommand("GET,LINE," & strMembRef))
-        End If
-        If Not String.IsNullOrEmpty(check) Then
-            If mem Then
-                m_GSAObject.MembCoorOnCurve(iMemb, dbNoderCord(0), dbNoderCord(1), dbNoderCord(2))
-
-            Else
-                m_GSAObject.LineCoorOnCurve(iMemb, dbNoderCord(0), dbNoderCord(1), dbNoderCord(2))
-
-            End If
-        End If
-        Return dbNoderCord
-    End Function
-    Public Function ExtractNodeCoor(ByVal strNode As String) As Double()
-
-        Dim iNode As Integer
-        'initialize the coords to 0 first
-        Dim dbNoderCord() As Double = {0.0, 0.0, 0.0}
-        If Not (Integer.TryParse(strNode, iNode)) Then
-            Return dbNoderCord
-        End If
         Dim check As Object
         Dim gwaCommand As String
-        gwaCommand = "EXIST,NODE," + strNode
+        gwaCommand = "EXIST,NODE," + iNode.ToString()
         check = m_GSAObject.GwaCommand(gwaCommand)
         Dim iCheck As Integer = CType(check, Integer)
         If 1 = iCheck Then
             m_GSAObject.NodeCoor(iNode, dbNoderCord(0), dbNoderCord(1), dbNoderCord(2))
         End If
-        'change SI unit to gsa user unit
-        dbNoderCord(0) = dbNoderCord(0) * m_cfactor
-        dbNoderCord(1) = dbNoderCord(1) * m_cfactor
-        dbNoderCord(2) = dbNoderCord(2) * m_cfactor
+        'change SI unit to user unit as NodeCord function return in SI unit
+        dbNoderCord(0) = dbNoderCord(0) * SIToFeet / m_cfactor
+        dbNoderCord(1) = dbNoderCord(1) * SIToFeet / m_cfactor
+        dbNoderCord(2) = dbNoderCord(2) * SIToFeet / m_cfactor
         Return dbNoderCord
-
-
     End Function
     Public Shared Function Arg(ByVal pos As Integer, ByVal source As String) As String
+        Dim strList As New List(Of String)
         Dim strArray As String() = source.Split(New [Char]() {","c})
-        If strArray.Length > pos Then
-            Return CType(strArray.GetValue(pos), String)
+        Dim bQuoteStart As Boolean = False
+        Dim bQuoteEnd As Boolean = False
+        Dim QuoteRecord As String = ""
+        Dim index As Integer = 0
+        For Each value As String In strArray
+            value = value.Trim()
+            If (bQuoteStart) Then
+                bQuoteEnd = value.EndsWith(ControlChars.Quote)
+            End If
+            If (Not bQuoteStart) Then
+                QuoteRecord = ""
+                bQuoteStart = value.StartsWith(ControlChars.Quote)
+            End If
+
+            If bQuoteStart OrElse bQuoteEnd Then
+                If (index > 0) Then
+                    QuoteRecord = QuoteRecord + ","
+                End If
+                QuoteRecord = QuoteRecord + value
+                index = index + 1
+            Else
+                QuoteRecord = value
+            End If
+
+            If bQuoteEnd Then
+                bQuoteStart = False
+            End If
+
+            If Not bQuoteStart Then
+                strList.Add(QuoteRecord)
+            End If
+        Next
+        If strList.Count > pos Then
+            Return CType(strList(pos), String)
         Else
             Return String.Empty
         End If
@@ -601,13 +600,12 @@ Public Class GsaComUtil
         'UNIT_DATA | option | name | factor
         'UNIT_DATA,LENGTH,ft,3.28084
 
-
         Double.TryParse(GsaComUtil.Arg(3, commandResult), m_cfactor)
-        m_cfLength = 3.28084 / m_cfactor
+        m_cfactor = 3.28084 / m_cfactor
         ' A factor which can convert the values to feet - This is what the revit API expects.
     End Sub
     'write a GSA Grid Plane
-    Public Function SetGridPlane(ByVal sid As String, ByVal iGrid As Integer, ByVal sName As String, ByVal iAxis As Integer, ByVal dElev As Double, ByVal dTol As Double) As Integer
+    Public Function SetGridPlane(ByVal iGrid As Integer, ByVal sName As String, ByVal sid As String, ByVal iAxis As Integer, ByVal dElev As Double, ByVal dTol As Double, Optional ByVal type As GsaComUtil.GridPlaneType = GsaComUtil.GridPlaneType.STOREY) As Integer
         '// ++
         '//	GRID_PLANE.2 | num | name | type | axis | elev | tol | below | above
         '//
@@ -626,45 +624,34 @@ Public Class GsaComUtil
         '//	above			storey tolerance above grid plane if STOREY
         ' // --
         Dim sGwaCommand As String = ""
-        If (0 = iGrid) Then
+        If (iGrid <= 0) Then
             iGrid = Me.HighestGridPlane() + 1
         End If
         'round
         dElev = Math.Round(dElev, RoundPrecision)
         'write grid plane
         sGwaCommand = "GRID_PLANE:"
-        sGwaCommand += sid
+        sGwaCommand += "{RVT:" & sid & "}"
         sGwaCommand += "," + iGrid.ToString()       'number
         sGwaCommand += "," & sName                  'name
-        sGwaCommand += "," + "STOREY"               'type [GENERAL :: general grid plane] or [STOREY	:: storey]
+        sGwaCommand += "," + type.ToString()        'type [GENERAL :: general grid plane] or [STOREY	:: storey]
         sGwaCommand += "," + iAxis.ToString()       'axis
         sGwaCommand += "," + dElev.ToString()       'elevation 
-        sGwaCommand += "," + dTol.ToString()        'grid plane tolerance 
+        sGwaCommand += "," + dTol.ToString()        'above tolerance 
         sGwaCommand += "," + dTol.ToString()        'below tolerance 
-        sGwaCommand += "," + dTol.ToString()        'above_tol 
         m_GSAObject.GwaCommand(sGwaCommand)
 
         Return iGrid
     End Function
+    
     Public Function GridPlane(ByVal iNum As Integer, ByRef sName As String, ByRef uid As String, ByRef dElev As Double) As Boolean
-        Dim bResult As Boolean = False
-        If Me.GridPlane(iNum, sName, dElev) Then
-            bResult = True
-        Else
-            Return False
-        End If
-        uid = m_GSAObject.GetSidTagValue("GRID_PLANE", iNum, "RVT")
-        Return bResult
-    End Function
-    Public Function GridPlane(ByVal iNum As Integer, ByRef sName As String, ByRef dElev As Double) As Boolean
         Dim type As GridPlaneType = GridPlaneType.STOREY
         Dim iAxis As Integer = 0
-        Dim dTol As Double = 0
-        Return Me.GridPlane(iNum, sName, iAxis, dElev, type, dTol)
-
+        Dim dTol As Double = 0.0
+        Return Me.GridPlane(iNum, sName, uid, iAxis, dElev, type, dTol)
     End Function
     'read a GSA Grid Plane
-    Public Function GridPlane(ByVal iGrid As Integer, ByRef sName As String, ByRef iAxis As Integer, ByRef dElev As Double, ByRef Type As GridPlaneType, ByRef dTol As Double) As Boolean
+    Public Function GridPlane(ByVal iGrid As Integer, ByRef sName As String, ByRef uid As String, ByRef iAxis As Integer, ByRef dElev As Double, ByRef eType As GsaComUtil.GridPlaneType, ByRef dTol As Double) As Boolean
 
         '// ++
         '//	GRID_PLANE.2 | num | name | type | axis | elev | tol | below | above
@@ -683,41 +670,51 @@ Public Class GsaComUtil
         '// below			storey tolerance below grid plane if STOREY
         '//	above			storey tolerance above grid plane if STOREY
         ' // --
-        If Not Me.GridPlaneExists(iGrid) Then
-            Return False
-        End If
-        Dim sGwaCommand As String = ""
-        Dim sArg As String
-        sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,GRID_PLANE," & iGrid.ToString))
-        If String.IsNullOrEmpty(sGwaCommand) Then
-            Return False
-        End If
-        sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
-        sArg = GsaComUtil.Arg(2, sGwaCommand) 'name
-        sName = sArg
-        sArg = GsaComUtil.Arg(3, sGwaCommand) 'type
-        If (sArg.ToLower().Equals("storey")) Then
-            Type = GridPlaneType.STOREY
-        Else
-            Type = GridPlaneType.GENERAL
-        End If
-        sArg = GsaComUtil.Arg(4, sGwaCommand) 'axis
-        iAxis = CInt(sArg)
+        Try
+            If Not Me.GridPlaneExists(iGrid) Then
+                Return False
+            End If
+            Dim sGwaCommand As String = ""
+            Dim sArg As String
+            sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,GRID_PLANE," & iGrid.ToString))
+            If String.IsNullOrEmpty(sGwaCommand) Then
+                Return False
+            End If
+            sArg = GsaComUtil.Arg(0, sGwaCommand)
+            Dim idString As String = GsaComUtil.ExtractId(sArg)
+            If Not String.IsNullOrEmpty(idString) Then
+                uid = idString
+            End If
+            sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
+            sArg = GsaComUtil.Arg(2, sGwaCommand) 'name
+            sName = sArg
+            sArg = GsaComUtil.Arg(3, sGwaCommand) 'type
+            If (sArg.ToLower().Equals("storey")) Then
+                eType = GridPlaneType.STOREY
+            Else
+                eType = GridPlaneType.GENERAL
+            End If
+            sArg = GsaComUtil.Arg(4, sGwaCommand) 'axis
+            iAxis = CInt(sArg)
 
-        sArg = GsaComUtil.Arg(5, sGwaCommand) 'elevation [feet]
-        dElev = Val(sArg)
-        sArg = GsaComUtil.Arg(6, sGwaCommand) 'elements
-        dTol = Val(sArg)
-
+            sArg = GsaComUtil.Arg(5, sGwaCommand) 'elevation [feet]
+            dElev = Val(sArg)
+            sArg = GsaComUtil.Arg(6, sGwaCommand) 'elements
+            dTol = Val(sArg)
+        Catch ex As Exception
+            Return False
+        End Try
         Return True
     End Function
-
     'write GSA grid line
     Public Function SetGridLine(ByVal iGrLine As Integer, ByVal sName As String, ByVal bArc As Boolean, ByVal sid As String,
                                    ByVal coorX As Double, ByVal coorY As Double, ByVal length As Double,
-                                   Optional ByVal theta1 As Double = 0.0, Optional ByVal theta2 As Double = 0.0) As Boolean
+                                   Optional ByVal theta1 As Double = 0.0, Optional ByVal theta2 As Double = 0.0) As Integer
 
         Dim sGwaCommand As String = ""
+        If (iGrLine <= 0) Then
+            iGrLine = Me.HighestGridLine() + 1
+        End If
         '// ++
         '// GRID_LINE | num | name | arc | coor_x | coor_y | length | theta1 | theta2
         '//
@@ -736,8 +733,9 @@ Public Class GsaComUtil
         '//	theta2				angle to end of arc (ignored if line) [°]
         '// --
         sName = sName.Replace("""", String.Empty)
-        sGwaCommand = "GRID_LINE,"
-        sGwaCommand += iGrLine.ToString() + ","
+        sGwaCommand = "GRID_LINE:"
+        sGwaCommand += "{RVT:" & sid & "}"
+        sGwaCommand += "," + iGrLine.ToString() + ","
         sGwaCommand += sName + ","
         If bArc Then
             sGwaCommand += "ARC"
@@ -750,171 +748,72 @@ Public Class GsaComUtil
 
         m_GSAObject.GwaCommand(sGwaCommand)
         Dim iGrLineNew As Integer = Me.HighestGridLine()
-
-        If Int32.Equals(iGrLine, iGrLineNew) Then
-            m_GSAObject.WriteSidTagValue("GRID_LINE", iGrLine, "RVT", sid)
-            Return True
-        Else
-            Return False
-        End If
-
+        Return iGrLine
     End Function
     Public Function GridLine(ByVal iGrLine As Integer, ByRef name As String, ByRef bArc As Boolean, ByRef sid As String,
                                     ByRef coorX As Double, ByRef coorY As Double, ByRef len As Double,
                                     ByRef theta1 As Double, ByRef theta2 As Double) As Boolean
 
+
         'GRID_LINE | num | name | arc | coor_x | coor_y | length | theta1 | theta2
+        Try
+            If Not Me.GridLineExists(iGrLine) Then
+                Return False
+            End If
 
-        If Not Me.GridLineExists(iGrLine) Then
+            Dim result As String = CStr(m_GSAObject.GwaCommand("GET,GRID_LINE," & iGrLine.ToString()))
+            Dim arg As String = GsaComUtil.Arg(0, result)
+            Dim idString As String = GsaComUtil.ExtractId(arg)
+            If Not String.IsNullOrEmpty(idString) Then
+                sid = idString
+            End If
+
+            arg = GsaComUtil.Arg(1, result)
+            Dim iLine As Integer = CInt(arg)
+            If Not Int32.Equals(iLine, iGrLine) Then
+                Return False
+            End If
+
+            arg = GsaComUtil.Arg(2, result)
+            name = arg
+
+            arg = GsaComUtil.Arg(3, result)
+            If arg.Equals("LINE") Then
+                bArc = False
+            Else
+                bArc = True
+            End If
+
+            arg = GsaComUtil.Arg(4, result)
+            Double.TryParse(arg, coorX)
+
+            arg = GsaComUtil.Arg(5, result)
+            Double.TryParse(arg, coorY)
+
+            arg = GsaComUtil.Arg(6, result)
+            Double.TryParse(arg, len)
+
+            arg = GsaComUtil.Arg(7, result)
+            Double.TryParse(arg, theta1)
+
+            arg = GsaComUtil.Arg(8, result)
+            Double.TryParse(arg, theta2)
+
+            sid = m_GSAObject.GetSidTagValue("GRID_LINE", iGrLine, "RVT")
+
+        Catch ex As Exception
             Return False
-        End If
-
-        Dim result As String = CStr(m_GSAObject.GwaCommand("GET,GRID_LINE," & iGrLine.ToString()))
-        Dim arg As String = GsaComUtil.Arg(1, result)
-        Dim iLine As Integer = CInt(arg)
-        If Not Int32.Equals(iLine, iGrLine) Then
-            Return False
-        End If
-
-        arg = GsaComUtil.Arg(2, result)
-        name = arg
-
-        arg = GsaComUtil.Arg(3, result)
-        If arg.Equals("LINE") Then
-            bArc = False
-        Else
-            bArc = True
-        End If
-
-        arg = GsaComUtil.Arg(4, result)
-        Double.TryParse(arg, coorX)
-
-        arg = GsaComUtil.Arg(5, result)
-        Double.TryParse(arg, coorY)
-
-        arg = GsaComUtil.Arg(6, result)
-        Double.TryParse(arg, len)
-
-        arg = GsaComUtil.Arg(7, result)
-        Double.TryParse(arg, theta1)
-
-        arg = GsaComUtil.Arg(8, result)
-        Double.TryParse(arg, theta2)
-
-        sid = m_GSAObject.GetSidTagValue("GRID_LINE", iGrLine, "RVT")
-
+        End Try
         Return True
     End Function
     'write a GSA 1D element
-    Public Function NumElementInMember(ByVal i As Integer) As Integer
-        Try
-            Return m_GSAObject.MembNumElem(i)
-        Catch ex As Exception
-            Dim str As String = ex.Message
-        End Try
-
-    End Function
-    Public Function ElementNumber(ByVal iMemb As Integer, ByVal iNdex As Integer) As Integer
-        Return m_GSAObject.MembElemNum(iMemb, iNdex)
-    End Function
-    Public Sub ReadAllConnection()
-        Dim nNoEnd As Integer = Me.HighestEnt("MEMB_END")
-        For iEnd As Integer = 1 To nNoEnd
-            If Not ConnectionExist(iEnd) Then
-                Continue For
-            End If
-            If (_Connection Is Nothing) Then
-                _Connection = New Dictionary(Of String, Integer)
-            End If
-            _Connection.Add(GetConnection(iEnd), iEnd)
-        Next
-
-    End Sub
-
-    Public Function GetConnection(ByVal iRec As Integer) As String
-        Dim uid As String
-        Dim name As String
-        Dim restraint As String
-        Dim restraintRelease As String
-        Dim formatedrelease As String = "FFFFFF"
-        If Not ConnectionExist(iRec) Then
-            Return formatedrelease
-        End If
-        Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,MEMB_END," & iRec.ToString))
-        Dim sArg As String = GsaComUtil.Arg(0, sGwaCommand)
-        Dim idString As String = GsaComUtil.ExtractId(sArg)
-
-        If Not String.IsNullOrEmpty(idString) Then
-            uid = idString
-        End If
-        name = GsaComUtil.Arg(2, sGwaCommand)
-        restraint = GsaComUtil.Arg(3, sGwaCommand)
-        restraintRelease = GsaComUtil.Arg(4, sGwaCommand)
-        Dim characters As Char() = restraintRelease.ToCharArray()
-        Dim Rel As String = String.Empty
-        For Each ch As Char In characters
-            If ch.Equals("1"c) Then
-                Rel = Rel + "F"
-            Else
-                Rel = Rel + "R"
-            End If
-        Next
-        If Not String.IsNullOrEmpty(Rel) Then
-            formatedrelease = Rel
-        End If
-
-        Return formatedrelease
-    End Function
-
-    Public Function SetConnection(ByRef uid As String, ByRef formatedrelease As String) As Integer
-        If _Connection Is Nothing Then
-            _Connection = New Dictionary(Of String, Integer)
-        End If
-        Dim iRec As Integer = 0
-        Dim CheckValue As String = formatedrelease
-        If (_Connection.ContainsKey(formatedrelease)) Then
-            If _Connection.TryGetValue(formatedrelease, iRec) Then
-                Return iRec
-            End If
-        End If
-
-        If (0 = iRec) Then
-            iRec = Me.HighestEnt("MEMB_END") + 1
-        End If
-        Dim sGwaCommand As String = "MEMB_END"
-        sGwaCommand += "," + iRec.ToString()               'number
-        sGwaCommand += "," + formatedrelease               'name
-        sGwaCommand += "," + "fixed"                       'restraint
-
-        Dim characters As Char() = formatedrelease.ToCharArray()
-        Dim Rel As String = String.Empty
-        For Each ch As Char In characters
-            If ch.Equals("F"c) Then
-                Rel = Rel + "1"
-            Else
-                Rel = Rel + "0"
-            End If
-        Next
-        sGwaCommand += "," + Rel                            'release
-
-        m_GSAObject.GwaCommand(sGwaCommand)
-        _Connection(formatedrelease) = iRec
-        Return iRec
-
-    End Function
-    Public Function RevitToGSAReleaseDescription(ByVal sRelease As String) As String
-        sRelease = sRelease.Replace("F", "1")
-        sRelease = sRelease.Replace("R", "0")
-        Return sRelease
-    End Function
-
-    Public Function CheckIfPolyLineWithDescExist(ByVal Desc As String, ByRef iPolyLine As Integer) As Boolean
+    Public Function IsPolyLineExist(ByVal Desc As String, ByRef iPolyLine As Integer) As Boolean
         If String.IsNullOrEmpty(Desc.Trim()) Then
             Return False
         End If
         Dim uid As String = "", name As String = "", _desc As String = ""
         For iPoly As Integer = 0 To HighestPolyLine() - 1
-            If ReadPolyLine(iPoly, uid, name, _desc) Then
+            If PolyLine(iPoly, uid, name, _desc) Then
                 If _desc.Trim() = Desc.Trim() Then
                     iPolyLine = iPoly
                     Return True
@@ -923,7 +822,7 @@ Public Class GsaComUtil
         Next
         Return False
     End Function
-    Public Function ReadPolyLine(ByVal iPoly As Integer, ByRef sID As String, ByRef sName As String, ByRef sDec As String) As Boolean
+    Public Function PolyLine(ByVal iPoly As Integer, ByRef sID As String, ByRef sName As String, ByRef sDec As String) As Boolean
 
         Dim sGwaCommand As String = "", sResult As Integer = 0
         sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,POLYLINE," & iPoly.ToString))
@@ -932,21 +831,14 @@ Public Class GsaComUtil
         If Not String.IsNullOrEmpty(idString) Then
             sID = idString
         End If
-        sArg = GsaComUtil.Arg(1, sGwaCommand)
-        If Integer.TryParse(sArg, sResult) Then
-            iPoly = sResult
-        Else
-            Return False
-        End If
-
-        sName = GsaComUtil.Arg(1, sGwaCommand)
+        sName = GsaComUtil.Arg(2, sGwaCommand)
 
         sDec = GsaComUtil.Arg(6, sGwaCommand)
 
         Return True
     End Function
     Public Function SetPolyLine(ByVal iPoly As Integer, ByVal sID As String, ByVal sName As String, ByVal sDec As String) As Integer
-        If (0 = iPoly) Then
+        If (iPoly <= 0) Then
             iPoly = Me.HighestPolyLine() + 1
         End If
         If String.IsNullOrEmpty(sName) Then
@@ -960,18 +852,24 @@ Public Class GsaComUtil
         sGwaCommand += ",NO_RGB"                          'colour
         sGwaCommand += ",-1"                              'undefined grid plane
         sGwaCommand += ",2"                               'number of dimension
-        sGwaCommand += "," + """" + sDec + """"         'number of description
+        sGwaCommand += "," + sDec                         'point description
 
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iPoly
     End Function
-    Public Function SetGridAreaLoad(ByVal iGridAreaLoad As Integer, ByVal sID As String, ByVal sName As String, ByVal iGrid As String, ByVal sPolyDesc As String, ByVal iDir As String, ByVal LoadValue1 As Double, ByVal LoadValue2 As Double, ByVal loadCase As Integer, ByVal bProjected As Boolean, ByVal bGlobal As Boolean, ByVal loadtype As GridLoadType) As Integer
+    Public Function SetGridAreaLoad(ByVal iGridAreaLoad As Integer, ByVal sID As String, ByVal sName As String, ByVal iGrid As Integer, ByVal sPolyDesc As String, ByVal iDir As String, ByVal LoadValue1 As Double, ByVal LoadValue2 As Double, ByVal loadCase As Integer, ByVal bProjected As Boolean, ByVal bGlobal As Boolean, ByVal loadtype As GridLoadType) As Integer
         'LOAD_GRID_AREA.2 | name | grid_surface | area | poly | case | axis | proj | dir | value @end
         'LOAD_GRID_LINE.2 | name | grid_surface | line | poly | case | axis | proj | dir | value_1 | value_2 @end
         'LOAD_GRID_POINT.2 | name | grid_surface | x | y | case | axis | dir | value @end
 
-        If (0 = iGridAreaLoad) Then
-            iGridAreaLoad = Me.HighestGridAreaLoad() + 1
+        If (iGridAreaLoad <= 0) Then
+            If loadtype = GridLoadType.AREA Then
+                iGridAreaLoad = Me.HighestGridAreaLoad() + 1
+            ElseIf loadtype = GridLoadType.LINE Then
+                iGridAreaLoad = Me.HighestGridLineLoad() + 1
+            Else
+                iGridAreaLoad = Me.HighestGridPointLoad() + 1
+            End If
         End If
         If String.IsNullOrEmpty(sName) Then
             sName = "Grid Area Load " + iGridAreaLoad.ToString()
@@ -988,7 +886,7 @@ Public Class GsaComUtil
 
         sGwaCommand += "{RVT:" & sID & "}"
         sGwaCommand += "," + sName                        'name
-        sGwaCommand += "," + iGrid                        'grid surface
+        sGwaCommand += "," + iGrid.ToString()             'grid surface
         If Not loadtype = GridLoadType.POINT Then
             sGwaCommand += ",POLYREF"
         End If
@@ -1021,12 +919,13 @@ Public Class GsaComUtil
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iGridAreaLoad
     End Function
-    Public Function CheckIfGridAreaLoadExistInDirection(ByVal sidIn As String, ByVal sDirIn As String, ByRef AreaLoadRec As Integer, ByVal loadtype As GridLoadType) As Boolean
+    Public Function IsGridAreaLoadExistInDirection(ByVal sidIn As String, ByVal sDirIn As String, ByRef AreaLoadRec As Integer, ByVal loadtype As GridLoadType) As Boolean
         For iGridArea As Integer = 0 To HighestGridAreaLoad() - 1
-            Dim sID As String = "", sName As String = "", iGrid As Integer = 0, iPolyRef As String = "", LoadCase As String = ""
+            Dim sID As String = "", sName As String = "", iGrid As Integer = 0, iPolyRef As String = ""
+            Dim LoadCase As Integer = 0
             Dim sDir As String = "", LoadValue1 As Double = 0, LoadValue2 As Double = 0, bProjected As Boolean = False, bGlobal As Boolean = False
             If GetGridAreaLoad(iGridArea, sID, sName, iGrid, iPolyRef, LoadCase, sDir, LoadValue1, LoadValue2, bProjected, bGlobal, loadtype) Then
-                If sidIn.Trim() = sID.Trim() AndAlso sDirIn.Trim() = sDir.Trim() Then
+                If sidIn.Trim() = sID.Trim() AndAlso sDirIn.ToLower().Trim() = sDir.ToLower().Trim() Then
                     AreaLoadRec = iGridArea
                     Return True
                 End If
@@ -1034,7 +933,7 @@ Public Class GsaComUtil
         Next
         Return False
     End Function
-    Public Function GetGridAreaLoad(ByVal iGridAreaLoad As Integer, ByRef sID As String, ByRef sName As String, ByRef iGrid As Integer, ByRef sPolyDesc As String, ByRef LoadCase As String, ByRef sDir As String, ByRef LoadValue1 As Double, ByRef LoadValue2 As Double, ByRef bProjected As Boolean, ByRef bGlobal As Boolean, ByVal loadtype As GridLoadType) As Boolean
+    Public Function GetGridAreaLoad(ByVal iGridAreaLoad As Integer, ByRef sID As String, ByRef sName As String, ByRef iGrid As Integer, ByRef sPolyDesc As String, ByRef LoadCase As Integer, ByRef sDir As String, ByRef LoadValue1 As Double, ByRef LoadValue2 As Double, ByRef bProjected As Boolean, ByRef bGlobal As Boolean, ByVal loadtype As GridLoadType) As Boolean
         'LOAD_GRID_AREA.2 | name | grid_surface | area | poly | case | axis | proj | dir | value @end
         'LOAD_GRID_LINE.2 | name | grid_surface | line | poly | case | axis | proj | dir | value_1 | value_2 @end
         'LOAD_GRID_POINT.2 | name | grid_surface | x | y | case | axis | dir | value @end
@@ -1082,7 +981,10 @@ Public Class GsaComUtil
 
 
         iNextIndex = iNextIndex + 1
-        LoadCase = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+        If Not Integer.TryParse(sArg, LoadCase) Then
+            Return False
+        End If
 
         iNextIndex = iNextIndex + 1
         bGlobal = True
@@ -1127,16 +1029,21 @@ Public Class GsaComUtil
         Else
             iNextIndex = iNextIndex + 1
             sDir = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+            iNextIndex = iNextIndex + 1
+            sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+            Dim fLoadValue As Double = 0
+            If Double.TryParse(sArg, fLoadValue) Then
+                LoadValue1 = fLoadValue
+            Else
+                Return False
+            End If
         End If
-
-
-
         Return True
     End Function
-    Public Function CheckGridSurfaceAssociatedWithGrid(ByVal iGrid As Integer, ByRef iGridSurf As Integer) As Boolean
+    Public Function IsGridAssociatedWithGridSurface(ByVal iGrid As Integer, ByRef iGridSurf As Integer) As Boolean
         Dim uid As String = "", name As String = "", grid As Integer = -1, elem2d As Boolean = False, bSpan2d As Boolean = False
         For iSurf As Integer = 0 To HighestGridSurface() - 1
-            If ReadGridSurface(iSurf + 1, uid, name, grid, elem2d, bSpan2d) Then
+            If GridSurface(iSurf + 1, uid, name, grid, elem2d, bSpan2d) Then
                 If grid = iGrid Then
                     iGridSurf = iSurf + 1
                     Return True
@@ -1145,9 +1052,9 @@ Public Class GsaComUtil
         Next
         Return False
     End Function
-    Public Function SetGridAreaSurface(ByVal iGridSurf As Integer, ByVal uid As String, ByVal name As String, ByVal iGrid As String, ByVal elem2d As Boolean, ByVal bSpan2d As Boolean) As Integer
+    Public Function SetGridSurface(ByVal iGridSurf As Integer, ByVal uid As String, ByVal name As String, ByVal iGrid As Integer, ByVal elem2d As Boolean, ByVal bSpan2d As Boolean) As Integer
 
-        If (0 = iGridSurf) Then
+        If (iGridSurf <= 0) Then
             iGridSurf = Me.HighestGridSurface() + 1
         End If
         If String.IsNullOrEmpty(name) Then
@@ -1156,9 +1063,9 @@ Public Class GsaComUtil
         Dim sGwaCommand As String = ""
         sGwaCommand = "GRID_SURFACE:"
         sGwaCommand += "{RVT:" & uid & "}"
-        sGwaCommand += "," + iGridSurf.ToString()         'name
+        sGwaCommand += "," + iGridSurf.ToString()        'grid id
         sGwaCommand += "," + name                        'name
-        sGwaCommand += "," + iGrid                       'grid plane
+        sGwaCommand += "," + iGrid.ToString()            'grid plane
         If elem2d Then
             sGwaCommand += ",2"                          'area type
         Else
@@ -1167,9 +1074,9 @@ Public Class GsaComUtil
         sGwaCommand += ",all"                            'element list
         sGwaCommand += ",0.001"                          'tolerance
         If bSpan2d Then
-            sGwaCommand += ",ONE"                         'span direction
-        Else
             sGwaCommand += ",TWO_GENERAL"                 'span direction
+        Else
+            sGwaCommand += ",ONE"                         'span direction
         End If
         sGwaCommand += ",0"                               'angle
         sGwaCommand += ",LEGACY"                          'grid expension option
@@ -1226,7 +1133,7 @@ Public Class GsaComUtil
 
     Public Function SetLoadCase(ByVal iLoadCase As Integer, ByVal uid As String, ByVal name As String, ByVal nature As String) As Integer
 
-        If (0 = iLoadCase) Then
+        If (iLoadCase <= 0) Then
             iLoadCase = Me.HighestLoadCase + 1
         End If
         If String.IsNullOrEmpty(name) Then
@@ -1255,18 +1162,18 @@ Public Class GsaComUtil
             If Not String.IsNullOrEmpty(idString) Then
                 uid = idString
             End If
-            name = GsaComUtil.Arg(3, sGwaCommand)
+            name = GsaComUtil.Arg(2, sGwaCommand)
             If String.IsNullOrEmpty(name.Trim()) Then
                 Return False
             End If
-            nature = GsaComUtil.Arg(4, sGwaCommand)
+            nature = GsaComUtil.Arg(3, sGwaCommand)
         Catch ex As Exception
             Return False
         End Try
 
         Return True
     End Function
-    Public Function ReadGridSurface(ByVal iGridSurf As Integer, ByRef uid As String, ByRef name As String, ByRef iGrid As Integer, ByRef elem2d As Boolean, ByRef bSpan2d As Boolean) As Boolean
+    Public Function GridSurface(ByVal iGridSurf As Integer, ByRef uid As String, ByRef name As String, ByRef iGrid As Integer, ByRef elem2d As Boolean, ByRef bSpan2d As Boolean) As Boolean
         Try
             Dim sGwaCommand As String = "", sResult As Integer = 0
             sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,GRID_SURFACE," & iGridSurf.ToString))
@@ -1280,6 +1187,7 @@ Public Class GsaComUtil
                 uid = idString
             End If
 
+            name = GsaComUtil.Arg(2, sGwaCommand)
 
             sArg = GsaComUtil.Arg(4, sGwaCommand)
             elem2d = False
@@ -1300,90 +1208,121 @@ Public Class GsaComUtil
 
 
     End Function
+
+    Public Function ElementCord(ByVal iElem As Integer) As List(Of Integer)
+        Dim sName As String = "", iProp As Integer = 0, uid As String = "", sTopo As String = "", dBeta As Double = 0
+        Dim sRelease As New List(Of String), dOffset As New List(Of Double()), typeMemb As MembType = MembType.BEAM
+        Dim eType As ElemType = ElemType.EL_BEAM
+        Dim iTopo As New List(Of Integer), iOrNode As Integer = 0
+        Elem1d(iElem, sName, iProp, uid, iTopo, iOrNode, dBeta, sRelease, dOffset, eType, "")
+        Return iTopo
+    End Function
+    Public Function MembCord(ByVal iElem As Integer) As String
+        Dim sName As String = "", iProp As Integer = 0, uid As String = "", sTopo As String = "", dBeta As Double = 0
+        Dim sRelease As New List(Of String), dOffset As New List(Of Double()), typeMemb As MembType = MembType.BEAM
+        Dim eType As ElemType = ElemType.EL_BEAM
+        Dim endRestraint1 As String = ""
+        Dim endRestraint2 As String = ""
+        Dim iOrNode As Integer = 0
+        Member(iElem, sName, iProp, uid, sTopo, iOrNode, dBeta, sRelease, dOffset, typeMemb, endRestraint1, endRestraint2)
+        Return sTopo
+    End Function
+    Public Function RestraintType(ByVal release As String) As String
+        'A pin joint is a connection between two objects that allows only relative
+        'rotation about a single axis. All translations as well as rotations about
+        'any other axis are prevented
+        release = release.ToUpper()
+        If (release.Equals("FFFFRR")) Then
+            Return "Pinned"
+        ElseIf (release.Equals("RRRRRR")) Then
+            Return "Free"
+        Else
+            Return "Fixed"
+        End If
+    End Function
     'write a GSA 1D element
     Public Function SetMember(ByVal iElem As Integer, ByVal sName As String, ByVal iProp As Integer,
-                                ByVal sID As String, ByRef sTopo As String,
+                                ByVal sID As String, ByVal sTopo As String, ByVal iOrNode As Integer,
                                 ByVal dBeta As Double, ByVal sRelease As List(Of String),
-                                ByRef dOffset As List(Of Double()), ByRef typeMemb As MembType,
-                                ByVal iGroup As Integer, ByVal iPool As Integer) As Integer
+                                ByVal dOffset As List(Of Double()), ByVal typeMemb As MembType,
+                                ByVal endRestraint1 As String, ByVal endRestraint2 As String) As Integer
 
-        If (0 = iElem) Then
+        If (iElem <= 0) Then
             iElem = Me.HighestEnt("MEMB") + 1
         End If
-        '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | node | angle | fire | time[3] | dummy | @end
-        '		con_1 | con_2 | AUTOMATIC | pool | height | load_ref | @end
-        '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | angle | fire | time[3] | dummy | @end
-        '		con_1 | con_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
-        '		height | load_ref | pool | off_auto_x1 | off_auto_x2 | off_x1 | off_x2 | off_y | off_z @end
-        '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | angle | fire | time[3] | dummy | @end
-        '		con_1 | con_2 | AUTOMATIC | pool | height | load_ref | @end
-        '		height | load_ref | pool | off_auto_x1 | off_auto_x2 | off_x1 | off_x2 | off_y | off_z @end
-        '
+        'MEMB0.8 | num | name | colour | type (1D) | prop | group | topology | node | angle |  @end
+        'mesh_size | is_intersector | analysis_type | fire | limit | time[4] | dummy | @End
+        'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | AUTOMATIC | height | load_ref | @end
+        'off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure@End
+        'MEMB0.8 | num | name | colour | type (1D) | prop | group | topology | node | angle | @end
+        'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
+        'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
+        'height | load_ref | stud_layout | off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure @End
+        'MEMB0.8 | num | name | colour | type (2D) | prop | group | topology | node | angle |  @end
+        'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
+        'off_auto_internal | off_z | exposure
 
+        Dim b1D As Boolean = Not Is2D(typeMemb)
         dBeta = Math.Round(dBeta, RoundPrecision)
         'Write beam element
         Dim sGwaCommand As String = ""
-        sGwaCommand = "MEMB:"
+        sGwaCommand = "MEMB.8:"
         sGwaCommand += "{RVT:" & sID & "}"
         sGwaCommand += "," + iElem.ToString()                 'number
         sGwaCommand += "," + sName                            'name
         sGwaCommand += ",NO_RGB"                              'colour
         sGwaCommand += "," + MembTypeStr(typeMemb)            'member type
+        sGwaCommand += "," + ""                               'exposed face
         sGwaCommand += "," + iProp.ToString()                 'section
-        Dim Grp As Integer = If(iGroup > 0, iGroup, 1)
-        sGwaCommand += "," + Grp.ToString()                   'group
+        sGwaCommand += ",1"                                   'group
         sGwaCommand += "," + sTopo                            'number of topo
-        sGwaCommand += ",0"                                   'orientation node
+        sGwaCommand += "," + iOrNode.ToString()                'orientation node
         sGwaCommand += "," + dBeta.ToString()                 'orientation angle
-        sGwaCommand += ",0,0,0,0,0"                           'fire and time
+        sGwaCommand += ",1,NO"                                'mesh size and mesh option + Intersector
+        If b1D Then
+            sGwaCommand += "," + "BEAM"                       'Analysis type ID
+        Else
+            sGwaCommand += "," + "LINEAR"                     'Analysis type 2D
+        End If
+        sGwaCommand += "," + "0,0.0,0,0,0,0"                  'fire resistance, temperature, stages
         sGwaCommand += ",ACTIVE"                              'member status
+        If b1D Then
+            sGwaCommand += "," + sRelease(0)                  'start release
+            sGwaCommand += "," + sRelease(1)                  'end release
+            If (String.IsNullOrEmpty(endRestraint1)) Then
+                sGwaCommand += "," + RestraintType(sRelease(0))    'fixity at end1
+            Else
+                sGwaCommand += "," + endRestraint1                'fixity at end1
+            End If
 
-        Dim iRec As Integer = SetConnection("", sRelease(0))
-        sGwaCommand += "," + If(iRec > 0, iRec.ToString(), "0")  'fixity at end1
+            If (String.IsNullOrEmpty(endRestraint2)) Then
+                sGwaCommand += "," + RestraintType(sRelease(1))    'fixity at end1
+            Else
+                sGwaCommand += "," + endRestraint2                'fixity at end2
+            End If
 
-        iRec = SetConnection("", sRelease(1))
-        sGwaCommand += "," + If(iRec > 0, iRec.ToString(), "0")  'fixity at end1
+            sGwaCommand += ",AUTOMATIC"                        'Automatic(0)
+            sGwaCommand += ",0"                                'load height
+            sGwaCommand += "," + CType(LoadPos.SHR_CENTRE, Integer).ToString() 'reference point
 
-        sGwaCommand += ",AUTOMATIC"                         'member status/Override length/
+            sGwaCommand += ",YES"                               'offset flag
+            sGwaCommand += ",MAN"                               'manual offset
+            sGwaCommand += ",MAN"                               'manual offset
 
-        sGwaCommand += ",0"                                'load height
-        sGwaCommand += "," + CType(LoadPos.SHR_CENTRE, Integer).ToString() 'reference point
-
-        sGwaCommand += ",AUTO"                              'auto offset
-        sGwaCommand += ",AUTO"                              'auto offset
-
-        sGwaCommand += "," + dOffset.Item(0)(0).ToString() 'axial offset at start
-        sGwaCommand += "," + dOffset.Item(1)(0).ToString() 'axial offset at end
-        sGwaCommand += "," + dOffset.Item(0)(1).ToString() 'transaverse offset
-        sGwaCommand += "," + dOffset.Item(1)(2).ToString() 'transverse offset
-
+            sGwaCommand += "," + dOffset.Item(0)(0).ToString()  'axial offset at start
+            sGwaCommand += "," + dOffset.Item(1)(0).ToString()  'axial offset at end
+            sGwaCommand += "," + dOffset.Item(0)(1).ToString()  'transaverse offset
+            sGwaCommand += "," + dOffset.Item(0)(2).ToString()  'transverse offset
+        Else
+            sGwaCommand += "," + dOffset.Item(0)(2).ToString()  'axial offset at start
+            sGwaCommand += ",NO"                                'auto internal offset 
+        End If
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iElem
     End Function
-
-    Public Function ElementCord(ByVal iElem As Integer) As List(Of Integer)
-        'Dim sName As String, iProp As Integer, uid As String, sTopo As String, dBeta As Double
-        'Dim sRelease As List(Of String), dOffset As List(Of Double()), typeMemb As MembType
-        Dim sName As String = "", iProp As Integer = 0, uid As String = "", sTopo As String = "", dBeta As Double = 0
-        Dim sRelease As New List(Of String), dOffset As New List(Of Double()), typeMemb As MembType = MembType.BEAM
-        Dim eType As ElemType = ElemType.EL_BEAM
-        Dim iTopo As New List(Of Integer), iOrNode As Integer = 0
-        Elem1d(iElem, iProp, uid, iTopo, iOrNode, dBeta, sRelease, dOffset, eType, typeMemb, "")
-        Return iTopo
-    End Function
-    Public Function MembCord(ByVal iElem As Integer) As String
-        'Dim sName As String, iProp As Integer, uid As String, sTopo As String, dBeta As Double
-        'Dim sRelease As List(Of String), dOffset As List(Of Double()), typeMemb As MembType
-        Dim sName As String = "", iProp As Integer = 0, uid As String = "", sTopo As String = "", dBeta As Double = 0
-        Dim sRelease As New List(Of String), dOffset As New List(Of Double()), typeMemb As MembType = MembType.BEAM
-        Dim eType As ElemType = ElemType.EL_BEAM
-        Member(iElem, sName, iProp, uid, sTopo, dBeta, sRelease, dOffset, typeMemb)
-        Return sTopo
-    End Function
     Public Function Member(ByVal iElem As Integer, ByRef sName As String, ByRef iProp As Integer,
-                                ByRef uid As String, ByRef sTopo As String, ByRef dBeta As Double,
-                                ByRef sRelease As List(Of String), ByRef dOffset As List(Of Double()),
-                                ByRef typeMemb As MembType) As Boolean
+                                ByRef uid As String, ByRef sTopo As String, ByRef iOrNode As Integer, ByRef dBeta As Double,
+                                ByRef sRelease As List(Of String), ByRef dOffset As List(Of Double()), ByRef eMembType As GsaComUtil.MembType, ByRef endRestraint1 As String, ByRef endRestraint2 As String) As Boolean
 
         If _MemList.ContainsKey(iElem) Then
 
@@ -1394,9 +1333,12 @@ Public Class GsaComUtil
             uid = nEle.UID
             sTopo = nEle.sTopo
             sRelease = nEle.Release
+            iOrNode = nEle.OrientationNode
             dBeta = nEle.Beta
             dOffset = nEle.Offset
-            typeMemb = nEle.MemberType
+            eMembType = nEle.MemberType
+            endRestraint1 = nEle.Endrestraint1
+            endRestraint2 = nEle.Endrestraint2
         Else
             Try
                 If Not Me.EntExists("MEMB", iElem) Then
@@ -1406,36 +1348,36 @@ Public Class GsaComUtil
                 dBeta = 0.0
                 dOffset = New List(Of Double())
                 sRelease = New List(Of String)
-
-                Dim offset0() As Double = {0, 0, 0}
-                Dim offset1() As Double = {0, 0, 0}
-                dOffset.Add(offset0)
-                dOffset.Add(offset1)
-
                 Dim sGwaCommand As String = ""
-                Dim sArg As String
+                Dim sArg As String = ""
                 sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,MEMB," & iElem.ToString))
                 If String.IsNullOrEmpty(sGwaCommand) Then
                     Return False
                 End If
-                '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | node | angle | fire | time[4] | dummy | @end
-                '		con_1 | con_2 | AUTOMATIC | pool | height | load_ref | @end
-                '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | angle | fire | time[4] | dummy | @end
-                '		con_1 | con_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
-                '		height | load_ref | pool | off_auto_x1 | off_auto_x2 | off_x1 | off_x2 | off_y | off_z @end
-                '	MEMB.7 | num | name | colour | type | mat | prop | group | topology | angle | fire | time[3] | dummy | @end
-                '		con_1 | con_2 | AUTOMATIC | pool | height | load_ref | @end
-                '		height | load_ref | pool | off_auto_x1 | off_auto_x2 | off_x1 | off_x2 | off_y | off_z @end
-                '
+
+                'MEMB.8 | num | name | colour | type (1D) | prop | group | topology | node | angle |  @end
+                'mesh_size | is_intersector | analysis_type | fire | limit | time[4] | dummy | @End
+                'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | AUTOMATIC | height | load_ref | @end
+                'off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure@End
+                'MEMB0.8 | num | name | colour | type (1D) | prop | group | topology | node | angle | @end
+                'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
+                'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
+                'height | load_ref | stud_layout | off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure @End
+                'MEMB0.8 | num | name | colour | type (2D) | prop | group | topology | node | angle |  @end
+                'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
+                'off_auto_internal | off_z | exposure
                 sArg = GsaComUtil.Arg(0, sGwaCommand)
                 Dim idString As String = GsaComUtil.ExtractId(sArg)
+                Dim moduleVesrion As String = ExtractVesrion(sArg)
+
                 If Not String.IsNullOrEmpty(idString) Then
                     uid = idString
                 End If
-
+                Dim iNextIndex As Integer = 1
                 sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
                 Debug.Assert(Integer.Equals(iElem, CInt(sArg)))
-                Dim iNextIndex As Integer = 2
+
+                iNextIndex = iNextIndex + 1
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'name
                 sName = sArg
 
@@ -1444,8 +1386,11 @@ Public Class GsaComUtil
 
                 iNextIndex = iNextIndex + 1
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'member type
-                typeMemb = MembTypeFromStr(sArg)
+                eMembType = MembTypeFromStr(sArg)
 
+                Dim b1D As Boolean = Not Is2D(eMembType)
+
+                iNextIndex = iNextIndex + 1 ' exposed face
 
                 iNextIndex = iNextIndex + 1
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'member section property
@@ -1460,18 +1405,27 @@ Public Class GsaComUtil
 
                 iNextIndex = iNextIndex + 1
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'orientation node
-                Dim iOrNode As Integer = CInt(sArg)
+                iOrNode = CInt(sArg)
 
                 iNextIndex = iNextIndex + 1
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'beta
                 dBeta = CDbl(sArg)
 
+
+                iNextIndex = iNextIndex + 1                    'mesh size
+
+                iNextIndex = iNextIndex + 1                    'Intersector
+
+                iNextIndex = iNextIndex + 1                    'analysis type
+
                 iNextIndex = iNextIndex + 1 'fire
+                iNextIndex = iNextIndex + 1 'limiting temperature
                 iNextIndex = iNextIndex + 1 'time 1
                 iNextIndex = iNextIndex + 1 'time 2
                 iNextIndex = iNextIndex + 1 'time 3
-                iNextIndex = iNextIndex + 1 'time 3
+                iNextIndex = iNextIndex + 1 'time 4
                 iNextIndex = iNextIndex + 1 'dummy
+
                 sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'dummy
                 Dim bDummy As Boolean = False
                 If sArg.Equals("DUMMY") Then
@@ -1479,89 +1433,127 @@ Public Class GsaComUtil
                 Else
                     bDummy = False
                 End If
+                If b1D Then
 
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'connection 1
-                Dim Conn1 As String = GetConnection(CType(sArg, Integer))
-
-                sRelease.Add(Conn1)
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'connection 2
-                Dim Conn2 As String = GetConnection(CType(sArg, Integer))
-                sRelease.Add(Conn2)
-
-
-                iNextIndex = iNextIndex + 1
-                'steel member
-                Dim restraintOption As String = GsaComUtil.Arg(iNextIndex, sGwaCommand) ' member status
-                If restraintOption.Equals("EXPLICIT") Then
                     iNextIndex = iNextIndex + 1
-                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
-                    Dim nPoint As Integer = 0
-                    Integer.TryParse(sArg, nPoint)
-                    For value As Integer = 0 To nPoint - 1
-                        iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'point
-
-                        iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'restraint description
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'release 0
+                    For Each c As Char In sArg
+                        If c.Equals("K") Then
+                            iNextIndex = iNextIndex + 1
+                        End If
                     Next
-                    'for span
+                    sRelease.Add(sArg)
                     iNextIndex = iNextIndex + 1
-                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
-                    nPoint = 0 : Integer.TryParse(sArg, nPoint)
-                    For value As Integer = 0 To nPoint - 1
-                        iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'span
-
-                        iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'span's restraint description
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'release 1
+                    For Each c As Char In sArg
+                        If c.Equals("K") Then
+                            iNextIndex = iNextIndex + 1
+                        End If
                     Next
+                    sRelease.Add(sArg)
 
-                ElseIf restraintOption.Equals("EFF_LEN") Then
+                    iNextIndex = iNextIndex + 1 'connection 1
+                    endRestraint1 = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+
+                    iNextIndex = iNextIndex + 1 'connection 2
+                    endRestraint2 = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+
                     iNextIndex = iNextIndex + 1
-                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Lyy
+
+                    'steel member
+                    Dim restraintOption As Integer = RestraintOptID(Arg(iNextIndex, sGwaCommand))
+                    If restraintOption.Equals(1) Then 'explicit
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+                        Dim nPoint As Integer = 0
+                        Integer.TryParse(sArg, nPoint)
+                        For value As Integer = 0 To nPoint - 1
+                            iNextIndex = iNextIndex + 1
+                            sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'point
+
+                            iNextIndex = iNextIndex + 1
+                            sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'restraint description
+                        Next
+                        'for span
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand)
+                        nPoint = 0 : Integer.TryParse(sArg, nPoint)
+                        For value As Integer = 0 To nPoint - 1
+                            iNextIndex = iNextIndex + 1
+                            sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'span
+
+                            iNextIndex = iNextIndex + 1
+                            sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'span's restraint description
+                        Next
+
+                    ElseIf restraintOption.Equals(2) Then 'effective length
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Lyy
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Lzz
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Llt
+
+                    End If
 
                     iNextIndex = iNextIndex + 1
-                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Lzz
+
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'load height
+                    Dim Loadheight As Double = CDbl(sArg)
 
                     iNextIndex = iNextIndex + 1
-                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Llt
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Ref point
+                    Dim RefPoint As String = sArg
 
+                    iNextIndex = iNextIndex + 1
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset
+
+                    If sArg.Equals("OFF") Then
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 1 
+                        Dim OffsetType1 As String = sArg
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 2
+                        Dim OffsetType2 As String = sArg
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x1 
+                        Dim X1 As Double = CDbl(sArg)
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x2
+                        Dim X2 As Double = CDbl(sArg)
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'y
+                        Dim y As Double = CDbl(sArg)
+
+                        iNextIndex = iNextIndex + 1
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'z
+                        Dim z As Double = CDbl(sArg)
+                        Dim offset0() As Double = {X1, y, z}
+                        Dim offset1() As Double = {X2, y, z}
+                        dOffset.Add(offset0)
+                        dOffset.Add(offset1)
+                    Else
+                        dOffset.Add({0, 0, 0})
+                        dOffset.Add({0, 0, 0})
+
+                    End If
+                Else
+                    iNextIndex = iNextIndex + 1
+                    sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'z
+                    iNextIndex = iNextIndex + 1   'auto internal offset
+                    Dim z As Double = CDbl(sArg)
+                    Dim offset0() As Double = {0, 0, z}
+                    Dim offset1() As Double = {0, 0, z}
+                    dOffset.Add(offset0)
+                    dOffset.Add(offset1)
                 End If
 
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'load height
-                Dim Loadheight As Double = CDbl(sArg)
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'Ref point
-                Dim RefPoint As String = sArg
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 1 
-                Dim OffsetType1 As String = sArg
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 2
-                Dim OffsetType2 As String = sArg
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x1 
-                Dim X1 As Double = CDbl(sArg)
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x2
-                Dim X2 As Double = CDbl(sArg)
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'y
-                Dim y As Double = CDbl(sArg)
-
-                iNextIndex = iNextIndex + 1
-                sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'z
-                Dim z As Double = CDbl(sArg)
 
                 Dim nEle As New MemberElement
                 nEle.Element = iElem
@@ -1571,85 +1563,33 @@ Public Class GsaComUtil
                 nEle.sTopo = sTopo
                 nEle.Beta = dBeta
                 nEle.Offset = dOffset
-                nEle.MemberType = typeMemb
+                nEle.MemberType = eMembType
                 nEle.Release = sRelease
                 nEle.OrientationNode = iOrNode
+                'GSA-5631
+                nEle.Endrestraint1 = endRestraint1
+                nEle.Endrestraint2 = endRestraint2
                 _MemList.Add(iElem, nEle)
 
             Catch ex As Exception
-                MsgBox(ex.Message)
+                Return False
             End Try
-
         End If
         Return True
     End Function
 
-
-    Public Function SetElem1d(ByVal iElem As Integer, ByVal iProp As Integer, ByVal sID As String,
+    Public Function SetElem1d(ByVal iElem As Integer, ByVal name As String, ByVal iProp As Integer, ByVal sID As String,
                                ByVal iTopoList As List(Of Integer), ByVal iOrNode As Integer, ByVal dBeta As Double,
-                               ByVal sRelease As List(Of String), ByVal dOffset As List(Of Double()), ByVal type As ElemType) As Integer
+                               ByVal sRelease As List(Of String), ByVal dOffset As List(Of Double()), ByVal type As ElemType, Optional ByVal strDummy As String = "") As Integer
 
-        '// ++
-        '//	EL.2 | num | name | colour | type | prop | group | topo() | orient_node | orient_angle | @br
-        '//		is_rls { | rls { | k } }
-        '//		is_offset { | ox | oy | oz } | dummy @end
-        '//
-        '//	EL.1 - for use with COM GwaCommand GET command to return element in EL_BAR, etc. format
-        '//
-        '//	@desc			Element release definition
-        '//
-        '//	@param
-        '//	num				element number
-        '//	name			name
-        '//	colour			colour (ref. <a href="#colour_syntax">colour syntax</a>)
-        '//	type			element type +
-        '//					BAR		: +
-        '//					BEAM	: +
-        '//					TIE		: +
-        '//					STRUT	: +
-        '//					SPRING	: +
-        '//					LINK	: +
-        '//					CABLE	: +
-        '//					SPACER	: +
-        '//					MASS	: +
-        '//					GROUND	: +
-        '//					TRI3	: +
-        '//					TRI6	: +
-        '//					QUAD4	: +
-        '//					QUAD8	: +
-        '//					BRICK8	: 
-        '//	prop			property number
-        '//	group			group number
-        '//	topo()			topology - number of items depends on type
-        '//	orient_node		orientation node
-        '//	orient_angle	orientation angle
-        '//	is_rls			releases are included, Or Not +
-        '//					NO_RLS | RLS | STIFF  :
-        '//	{
-        '//	rls				release code for elements (XYZ Or xyzXYZ) +
-        '//					3 characters - rotations only +
-        '//					6 characters - translation + rotation +
-        '//					F : Fix(no release) +
-        '//					R : pin(release) +
-        '//					K : stiff(release + stiffness)
-        '//	{
-        '//	k				stiffness - one value for each K above
-        '//	}
-        '//	}
-        '//	is_offset		offsets are included, Or Not +
-        '//					OFFSET | LOCAL_OFFSET | NO_OFFSET :
-        '//	{
-        '//	ox				offset x
-        '//	oy				offset y
-        '//	oz				offset z
-        '//	}
-        '//	dummy			dummy flag
-        '// --
+        '	EL.4 | num | name | colour | type | prop | group | topo() | orient_node | orient_angle | @br
+        '	is_rls { | rls { | k } }
+        '	off_x1 | off_x2 | off_y | off_z | parent_member | dummy  @end
+
         Dim sGwaCommand As String = ""
-        Dim name As String = ""
         Dim clr As Color = Color.Black()
 
-        If (0 = iElem) Then
+        If (iElem <= 0) Then
             iElem = Me.HighestEnt("EL") + 1
         End If
         'round
@@ -1659,7 +1599,7 @@ Public Class GsaComUtil
         sGwaCommand += "," + iElem.ToString()        'number
         sGwaCommand += "," + name                    'name
         sGwaCommand += "," + clr.ToArgb().ToString() 'color
-        sGwaCommand += "," + "BAR"                   'element type
+        sGwaCommand += "," + ElemDesc(type)           'element type
         sGwaCommand += "," + iProp.ToString()       'property
         sGwaCommand += ",1"                         'group
         For Each topo As String In iTopoList
@@ -1668,12 +1608,19 @@ Public Class GsaComUtil
         sGwaCommand += "," + iOrNode.ToString()     'orientation node
         sGwaCommand += "," + dBeta.ToString()       'orientation angle
         sGwaCommand += "," + "RLS"                  'is_rls
+        Debug.Assert(iTopoList.Count.Equals(sRelease.Count))
         For Each rels As String In sRelease
             sGwaCommand += "," + rels      'topo 
+            For Each c As Char In rels
+                If c.Equals("K") Then
+                    sGwaCommand += ",1.0"
+                End If
+            Next
         Next
+
         If dOffset.Count > 1 Then
             sGwaCommand += "," + dOffset(0)(0).ToString()      'X1 
-            sGwaCommand += "," + dOffset(0)(0).ToString()      'X1                           'X2 ?????????????
+            sGwaCommand += "," + dOffset(1)(0).ToString()      'X2                           
             sGwaCommand += "," + dOffset(0)(1).ToString()      'Y 
             sGwaCommand += "," + dOffset(0)(2).ToString()      'Z
         Else
@@ -1682,7 +1629,7 @@ Public Class GsaComUtil
             sGwaCommand += ",0" 'Y 
             sGwaCommand += ",0" 'Z
         End If
-
+        sGwaCommand += "," + strDummy
         m_GSAObject.GwaCommand(sGwaCommand)
 
         Return iElem
@@ -1690,27 +1637,29 @@ Public Class GsaComUtil
 
 
     'read a GSA 1D element
-    Public Function Elem1d(ByVal iElem As Integer, ByRef iProp As Integer, ByRef uid As String,
+    Public Function Elem1d(ByVal iElem As Integer, ByRef name As String, ByRef iProp As Integer, ByRef uid As String,
             ByRef iTopoList As List(Of Integer), ByRef iOrNode As Integer, ByRef dBeta As Double,
             ByRef sRelease As List(Of String), ByRef dOffset As List(Of Double()), ByRef elemType As ElemType,
-            ByRef eMembType As MembType, ByRef strDummy As String) As Boolean
+            ByRef strDummy As String) As Boolean
 
-        'EL | num | name | colour | type | prop | group | topo() | node | angle |
-        'is_rls { | rls() } | is_offset { | ox | oy | oz } | dummy 
-        'EL,1,,NO_RGB,BEAM,1,1,1,2,0,0.000000,RLS,FPF,FFF
+        '	EL.4 | num | name | colour | type | prop | group | topo() | orient_node | orient_angle | @br
+        '	is_rls { | rls { | k } }
+        '	off_x1 | off_x2 | off_y | off_z | parent_member | dummy  @end
+
         If _EleList.ContainsKey(iElem) Then
             Dim nEle As MemberElement = _EleList(iElem)
             iElem = nEle.Element
+            name = nEle.Name
             iProp = nEle.SecPro
             uid = nEle.UID
             iTopoList = nEle.Topo
-            '  iOrNode = nEle.OrientationNode
+
             dBeta = nEle.Beta
             sRelease = nEle.Release
             dOffset = nEle.Offset
             iOrNode = nEle.OrientationNode
             strDummy = nEle.Dummy
-            eMembType = nEle.MemberType
+            elemType = nEle.ElementType
         Else
             iTopoList = New List(Of Integer)
             dOffset = New List(Of Double())
@@ -1719,7 +1668,7 @@ Public Class GsaComUtil
             If Not Me.EntExists("EL", iElem) Then
                 Return False
             End If
-            Dim eType As ElemType
+
             Dim sGwaCommand As String = ""
             sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,EL," & iElem.ToString))
 
@@ -1735,19 +1684,22 @@ Public Class GsaComUtil
                 uid = idString
             End If
 
-            sArg = GsaComUtil.Arg(4, sGwaCommand)
-            eType = Me.ElemTypeFromString(sArg)
+            name = GsaComUtil.Arg(2, sGwaCommand)
 
-            If Not GsaComUtil.ElemTypeIsBeamOrTruss(eType) Then
+            sArg = GsaComUtil.Arg(4, sGwaCommand)
+            elemType = Me.ElemTypeFromString(sArg)
+
+            If Not GsaComUtil.ElemTypeIsBeamOrTruss(elemType) Then
                 Return False
             End If
 
             sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
             Debug.Assert(Integer.Equals(iElem, CInt(sArg)))
             sArg = GsaComUtil.Arg(5, sGwaCommand) 'property
-            iProp = CInt(sArg)
 
-            eMembType = MemberType(iProp)
+            'https://ovearup.atlassian.net/browse/GSA-5998
+            Dim splitProperty As String() = sArg.Split("["c)
+            iProp = CInt(splitProperty(0))
 
             sArg = GsaComUtil.Arg(7, sGwaCommand) 'topo 0
             iTopoList.Add(CInt(sArg))
@@ -1767,8 +1719,20 @@ Public Class GsaComUtil
 
                 position += 1
                 sArg = GsaComUtil.Arg(position, sGwaCommand) 'release 0
+                For Each c As Char In sArg
+                    If c.Equals("K") Then
+                        position += 1
+                    End If
+                Next
+                sRelease.Add(sArg)
                 position += 1
                 sArg = GsaComUtil.Arg(position, sGwaCommand) 'release 1
+                For Each c As Char In sArg
+                    If c.Equals("K") Then
+                        position += 1
+                    End If
+                Next
+                sRelease.Add(sArg)
             Else
                 sRelease.Add("FFFFFF")
                 sRelease.Add("FFFFFF")
@@ -1776,9 +1740,7 @@ Public Class GsaComUtil
 
             'offsets
             position += 1
-            sArg = GsaComUtil.Arg(position, sGwaCommand)
             Dim dOff() As Double = New Double() {0, 0, 0, 0}
-            position += 1
             sArg = GsaComUtil.Arg(position, sGwaCommand)    'offset 0, X1
             Dim X1 As Double = Val(sArg)
 
@@ -1811,6 +1773,7 @@ Public Class GsaComUtil
 
             Dim nEle As MemberElement = New MemberElement()
             nEle.Element = iElem
+            nEle.Name = name
             nEle.SecPro = iProp
             nEle.UID = uid
             nEle.Topo = iTopoList
@@ -1820,247 +1783,20 @@ Public Class GsaComUtil
             nEle.Offset = dOffset
             nEle.Dummy = strDummy
             nEle.OrientationNode = iOrNode
-            nEle.MemberType = eMembType
+            nEle.ElementType = elemType
             _EleList.Add(iElem, nEle)
         End If
         Return True
     End Function
 
-    Function NumTopoEL(ByVal ELType As ElemType) As Integer
-
-        Dim etype As ElemType = ElemType.EL_UNDEF
-
-        Select Case ELType
-            Case ElemType.EL_BAR, ElemType.EL_BEAM, ElemType.EL_TIE, ElemType.EL_STRUT, ElemType.EL_SPRING
-                Return 2
-            Case ElemType.EL_TRI3
-                Return 3
-            Case ElemType.EL_TRI6
-                Return 6
-            Case ElemType.EL_QUAD4
-                Return 4
-            Case ElemType.EL_QUAD4
-                Return 8
-            Case Else
-                Return 2
-        End Select
-
-        Return 2
-    End Function
-
-    ' int NumTopo() Const
-    '{	
-    '             switch( m_iGeom )
-    '	{
-    '	Case MembGeom : LINE:		    Return 2;
-    '	Case MembGeom : ARC_THIRD
-    '	Case MembGeom : ARC_RADIUS:      Return 3;
-    '	Case MembGeom : EXPLICIT:		Return NumExplicitNode() ? NumExplicitNode() : 2;
-    '	Default:     ASSERT(false);      throw std:runtime_error("");
-    '	}
-    '}
-
-
-
-    Public Function GetMembType(ByVal iElem As Integer) As MembType
-        Dim Type As MembType = MembType.UNDEF
-        If Not Me.EntExists("MEMB", iElem) Then
-            Exit Function
-        End If
-        Dim sGwaCommand As String = ""
-        sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,MEMB," & iElem.ToString))
-        If String.IsNullOrEmpty(sGwaCommand) Then
-            Exit Function
-        End If
-        Dim sArg As String = GsaComUtil.Arg(5, sGwaCommand) 'membmat
-
-        Type = MembTypeFromStr(sArg)
-
-        Return Type
-
-    End Function
-    'read a GSA 1D element
-    Public Function IsExplicit(ByVal membtype As MembType, ByVal cTopo As String) As Boolean
-        Dim orderdNodes As List(Of List(Of Integer)) = Nothing
-        Dim voids As List(Of List(Of Integer)) = Nothing
-        Dim arcNodes As List(Of Integer) = Nothing
-        StringTolist(cTopo, orderdNodes, arcNodes, voids)
-        If membtype.Equals(MembType.BEAM) OrElse membtype.Equals(MembType.COLUMN) Then
-            If arcNodes.Count > 0 AndAlso orderdNodes.Count > 0 Then
-                If orderdNodes(0).Count = 3 Then
-                    Return False
-                End If
-            End If
-            If orderdNodes.Count > 0 Then
-                Dim iCount As Integer = 0
-                For Each item As List(Of Integer) In orderdNodes
-                    iCount = iCount + item.Count
-                Next
-                If iCount > 2 Then
-                    Return True
-                End If
-            End If
-        End If
-            Return False
-    End Function
-    Public Function IsCurve(ByVal membtype As MembType, ByVal cTopo As String) As Boolean
-        Dim orderdNodes As List(Of List(Of Integer)) = Nothing
-        Dim voids As List(Of List(Of Integer)) = Nothing
-        Dim arcNodes As List(Of Integer) = Nothing
-        StringTolist(cTopo, orderdNodes, arcNodes, voids)
-        If arcNodes.Count > 0 Then
-            Return True
-        End If
-        Return False
-    End Function
-
-    'write a GSA Line
-    Public Function SetLine(ByVal iNode0 As Integer, ByVal iNode1 As Integer, Optional ByVal iNode2 As Integer = 0, Optional ByVal dRad As Double = 0.0) As Integer
-
-
-        '	LINE.3 | ref | name | colour | type | topology_1 | topology_2 | topology_3 | radius |
-        '	axis | x | y | z | xx | yy | zz | Kx | Ky | Kz | Kxx | Kyy | Kzz |
-        '	CM2_MESHTOOLS{step_definition | elem_len_start | elem_len_end | num_elem} |
-        '	tied_int @end
-
-        If iNode2 = 0 Then
-            Dim iLineExist As Integer = IsLineExist(iNode0, iNode1)
-            If (iLineExist > -1) Then
-                Return iLineExist
-            End If
-        End If
-
-        Dim iLine As Integer = HighestLine()
-        iLine += 1
-        Dim sGwaCommand As String = ""
-        sGwaCommand += "LINE"
-        sGwaCommand += "," + iLine.ToString()       'ref
-        sGwaCommand += ","                          'name
-        sGwaCommand += ",NO_RGB"                    'colour    
-
-
-        If iNode2 = 0 Then
-            sGwaCommand += ",LINE"                  'type
-        Else
-            sGwaCommand += ",ARC_THIRD_PT"
-        End If
-        sGwaCommand += "," + iNode0.ToString()      'topo1
-        sGwaCommand += "," + iNode1.ToString()      'topo2
-        sGwaCommand += "," + iNode2.ToString()      'topo3
-        sGwaCommand += "," + dRad.ToString()        'radius
-        sGwaCommand += ",GLOBAL"                    'axis
-
-        ' Hard code these for now - 14/12/06
-        sGwaCommand += ", 0, 0, 0, 0, 0, 0"         'Axis defn & constriants
-        sGwaCommand += ", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0," 'Kx | Ky | Kz | Kxx | Kyy | Kzz 
-        sGwaCommand += "CM2_MESHTOOLS,USE_REGION_STEP_SIZE, 1, 1, 6, NO"   'step defn, StepSize, Num_Seg, Ratio, tied_int
-        m_GSAObject.GwaCommand(sGwaCommand)
-        Return iLine
-    End Function
-    'Get a GSA line
-    Public Function LineOfArcType() As List(Of Integer)
-        Dim iLineList As New List(Of Integer)
-        For iLine As Integer = 1 To HighestLine()
-            Dim iStart As Integer = 0
-            Dim iEnd As Integer = 0
-            Dim iMid As Integer = 0
-            Dim Ltype As GsaComUtil.LineType = GsaComUtil.LineType.LINEAR
-            Dim sidFromGsa As String = ""
-            Dim bExist As Boolean = GetLine(iLine, sidFromGsa, iStart, iEnd, iMid, Ltype)
-            If (Ltype.Equals(LineType.ARC_THIRD_PT)) OrElse (Ltype.Equals(LineType.ARC_RADIUS)) Then
-                iLineList.Add(iLine)
-            End If
-        Next
-        Return iLineList
-    End Function
-    Public Function IsLineExist(ByRef iNode0 As Integer, ByRef iNode1 As Integer) As Integer
-        For iLine As Integer = 1 To HighestLine()
-            Dim iStart As Integer = 0
-            Dim iEnd As Integer = 0
-            Dim iMid As Integer = 0
-            Dim Ltype As GsaComUtil.LineType = GsaComUtil.LineType.LINEAR
-            Dim sidFromGsa As String = ""
-            Dim bExist As Boolean = GetLine(iLine, sidFromGsa, iStart, iEnd, iMid, Ltype)
-            If iStart.Equals(iNode0) AndAlso iEnd.Equals(iNode1) Then
-                Return iLine
-            End If
-            If iStart.Equals(iNode1) AndAlso iEnd.Equals(iNode0) Then
-                Return iLine
-            End If
-        Next
-        Return -1
-    End Function
-    Public Function GetLine(ByRef iLine As Integer, ByRef sidFromGsa As String, ByRef iNode0 As Integer, ByRef iNode1 As Integer, ByRef iNode2 As Integer, ByRef type As LineType) As Boolean
-        If _LineList.ContainsKey(iLine) Then
-            Dim nLine As GSALine = _LineList(iLine)
-            iLine = nLine.LineNumber()
-            iNode0 = nLine.Node0
-            iNode1 = nLine.Node1
-            iNode2 = nLine.Node2
-            type = nLine.LineType
-            Return True
-        Else
-            If Not LineExists(iLine) Then
-                Return False
-            End If
-
-            '	LINE.3 | ref | name | colour | type | topology_1 | topology_2 | topology_3 | radius |
-            '	axis | x | y | z | xx | yy | zz | Kx | Ky | Kz | Kxx | Kyy | Kzz |
-            '	CM2_MESHTOOLS{step_definition | elem_len_start | elem_len_end | num_elem} |
-            '	tied_int @ends
-            Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,LINE," & iLine.ToString))
-            Try
-                Dim sArg As String = GsaComUtil.Arg(0, sGwaCommand)
-                sidFromGsa = GsaComUtil.ExtractId(sArg) ' sid
-                sArg = GsaComUtil.Arg(4, sGwaCommand)
-                If (sArg.Equals("ARC_THIRD_PT")) Then
-                    sArg = GsaComUtil.Arg(5, sGwaCommand)
-                    iNode0 = CType(sArg, Integer)
-                    sArg = GsaComUtil.Arg(6, sGwaCommand)
-                    iNode1 = CType(sArg, Integer)
-                    sArg = GsaComUtil.Arg(7, sGwaCommand)
-                    iNode2 = CType(sArg, Integer)
-                    type = LineType.ARC_THIRD_PT
-                ElseIf (sArg.Equals("ARC_RADIUS")) Then
-                    sArg = GsaComUtil.Arg(5, sGwaCommand)
-                    iNode0 = CType(sArg, Integer)
-                    sArg = GsaComUtil.Arg(6, sGwaCommand)
-                    iNode1 = CType(sArg, Integer)
-                    sArg = GsaComUtil.Arg(7, sGwaCommand)
-                    iNode2 = CType(sArg, Integer)
-                    type = LineType.ARC_RADIUS
-                Else
-                    sArg = GsaComUtil.Arg(5, sGwaCommand)
-                    iNode0 = CType(sArg, Integer)
-                    sArg = GsaComUtil.Arg(6, sGwaCommand)
-                    iNode1 = CType(sArg, Integer)
-                    type = LineType.LINEAR
-                End If
-                Dim nEle As New GSALine
-                nEle.LineNumber = iLine
-                nEle.Node0 = iNode0
-                nEle.Node1 = iNode1
-                nEle.Node2 = iNode2
-                nEle.LineType = type
-                _LineList.Add(iLine, nEle)
-                Return True
-            Catch ex As Exception
-                Return False
-            End Try
-            Return True
-
-        End If
-    End Function
-    Public Function Get2dProp(ByVal i2dprop As Integer, ByRef sidFromGsa As String, ByRef usage As SectionUsage, ByRef name As String, ByRef dThick As Double, ByRef ematType As MembMat, ByRef iMat As Integer) As Boolean
-
-        '	PROP_2D.3 | num | name | colour | type | axis | mat | mat_type | grade | design | thick | ref_pt | ref_z | @end
-        '	mass | flex | inplane | weight | @end
-        '	is_env { | energy | CO2A | CO2B | CO2C | CO2D | recycle | user }
+    Public Function Prop2D(ByVal i2dprop As Integer, ByRef sidFromGsa As String, ByRef usage As SectionUsage, ByRef name As String, ByRef description As String, ByRef ematType As MembMat, ByRef iMat As Integer, ByRef eType As Type2D) As Boolean
+        '	PROP_2D.8 | num | name | colour | type | axis | mat | mat_type | grade | design | profile | ref_pt | ref_z |
+        '		mass | flex | shear | inplane | weight | @end
         Try
 
             Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,PROP_2D," & i2dprop.ToString))
             Dim sArg As String = GsaComUtil.Arg(0, sGwaCommand)
-
+            usage = SectionUsage.INVALID
             Dim sidList As New SortedList(Of String, String)
             Dim sid_string As String = GsaComUtil.ExtractId(sArg)
             Me.ParseNestedSid(sid_string, sidList)
@@ -2085,7 +1821,7 @@ Public Class GsaComUtil
 
             name = GsaComUtil.Arg(2, sGwaCommand)
             sArg = GsaComUtil.Arg(4, sGwaCommand)
-
+            eType = Type2DFromStr(sArg)
             Dim iIndex As Integer = 6
             sArg = GsaComUtil.Arg(iIndex, sGwaCommand)
             Dim nLayer As Integer = CType(sArg, Integer)
@@ -2102,172 +1838,11 @@ Public Class GsaComUtil
             iMat = CType(sArg, Integer)
 
             iIndex = iIndex + 2
-            sArg = GsaComUtil.Arg(iIndex, sGwaCommand)
-            dThick = CType(sArg, Double)
-
+            description = GsaComUtil.Arg(iIndex, sGwaCommand)
         Catch ex As Exception
             Return False
         End Try
         Return True
-    End Function
-    Public Function GetLineEndNode(ByVal iLine As Integer, Optional ByVal bEnd As Boolean = True) As Integer
-        Dim sidline As String = ""
-        Dim N0 As Integer = -1
-        Dim N1 As Integer = -1
-        Dim N2 As Integer = -1, Ltype As GsaComUtil.LineType = GsaComUtil.LineType.LINEAR
-        GetLine(iLine, sidline, N0, N1, N2, Ltype)
-        If bEnd Then
-            Return N1
-        End If
-        Return N0
-    End Function
-    Public Function AreaInsideArea(ByRef iArea As Integer, ByRef jArea As Integer) As Boolean
-        Dim bResult As Boolean = CType(m_GSAObject.IsAreaInsideArea(iArea, jArea), Boolean)
-        Return bResult
-    End Function
-    Public Sub SetVoid(ByRef areas As List(Of Integer))
-        For Each area As Integer In areas
-            For Each areaIn As Integer In areas
-                If area.Equals(areaIn) Then
-                    Continue For
-                End If
-                If AreaInsideArea(area, areaIn) Then
-                    Dim _sid As String = String.Empty
-                    Dim _gsa2DProp As Integer = 0
-                    Dim _lines As List(Of Integer) = New List(Of Integer)
-                    Dim _areaType As AreaType = AreaType.TWO_WAY
-                    If GetArea(areaIn, _sid, _gsa2DProp, _lines, _areaType) Then
-                        EditArea(areaIn, _lines, _gsa2DProp, _sid, AreaType.VOID)
-                    End If
-                End If
-            Next
-        Next
-    End Sub
-
-    Public Function EditArea(ByVal iArea As Integer, ByRef lines As List(Of Integer), ByRef iProp As Integer, ByVal uid As String, ByVal area As AreaType) As Integer
-
-        'AREA.2 | ref | name | colour | type | span | property | group | lines | coefficient @end
-        'AREA.1 | ref | name | type | span | property | group | lines | coefficient 
-        Dim sGwaCommand As String = "SET, AREA"
-        sGwaCommand += "," + iArea.ToString()
-        sGwaCommand += ","                      'name
-        sGwaCommand += ",NO_RGB"                'colour   
-        sGwaCommand += "," + area.ToString()    'type
-        sGwaCommand += "," + "0.0"              'span
-        sGwaCommand += "," + iProp.ToString()   'property
-        sGwaCommand += "," + "1"                'group
-        sGwaCommand += ","
-        For Each line As Integer In lines
-            sGwaCommand += " " + line.ToString() 'lines
-        Next
-        sGwaCommand += ","
-        sGwaCommand += ",0.0"                     'coefficient
-        m_GSAObject.GwaCommand(sGwaCommand)
-        If AreaExists(iArea) Then
-            m_GSAObject.WriteSidTagValue("AREA", iArea, "RVT", uid)
-        End If
-        Return iArea
-    End Function
-    Public Function IsAreaVoid(ByRef iArea As Integer) As Boolean
-        Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,AREA," & iArea.ToString))
-        Dim sArg As String = GsaComUtil.Arg(4, sGwaCommand)
-        If (sArg.Equals("TWO_WAY")) Then
-            Return False
-        End If
-        Return True
-    End Function
-
-    Public Function GetArea(ByRef iArea As Integer, ByRef sidFromGsa As String, ByRef gsa2Dprop As Integer, ByRef lines As List(Of Integer), ByRef type As AreaType) As Boolean
-        'AREA.2 | ref | name | colour | type | span | property | group | lines | coefficient 
-        'AREA.1 | ref | name | type | span | property | group | lines | coefficient 
-        If Not AreaExists(iArea) Then
-            Return False
-        End If
-
-        lines = New List(Of Integer)
-        Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,AREA," & iArea.ToString))
-        Dim sArg As String = GsaComUtil.Arg(0, sGwaCommand)
-        sidFromGsa = GsaComUtil.ExtractId(sArg) ' sid
-        sArg = GsaComUtil.Arg(4, sGwaCommand)
-        If (sArg.Equals("TWO_WAY")) Then
-            sArg = GsaComUtil.Arg(6, sGwaCommand)
-            gsa2Dprop = CType(sArg, Integer)
-            sArg = GsaComUtil.Arg(8, sGwaCommand)
-            sArg = FormatLine(sArg)
-            Dim words As String() = sArg.Trim().Split(New Char() {","c, " "c})
-            For Each word As String In words
-                lines.Add(CType(word.Trim(), Integer))
-            Next
-            type = AreaType.TWO_WAY
-        Else
-            sArg = GsaComUtil.Arg(6, sGwaCommand)
-            gsa2Dprop = CType(sArg, Integer)
-            sArg = GsaComUtil.Arg(8, sGwaCommand)
-            Dim words As String() = sArg.Trim().Split(New Char() {","c, " "c})
-            For Each word As String In words
-                lines.Add(CType(word.Trim(), Integer))
-            Next
-            type = AreaType.VOID
-        End If
-        Return True
-    End Function
-    Private Function FormatLine(ByVal StrLine As String) As String
-        Dim iExclude As New List(Of Integer), strOut As String = ""
-        Dim delimiters As String() = New String() {",", " "}
-        Dim strAppend As New List(Of String)
-        Dim strsplit As String() = StrLine.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
-        For i As Integer = 0 To strsplit.Length - 1
-            If strsplit(i).Equals("to") Then
-                Dim strReplace As String = ""
-                Dim istart As Integer = Convert.ToInt32(strsplit(i - 1))
-                Dim iend As Integer = Convert.ToInt32(strsplit(i + 1))
-                For j As Integer = istart To iend
-                    Dim strLineNum As String = j.ToString().Trim()
-                    If Not strAppend.Contains(strLineNum) Then
-                        strAppend.Add(strLineNum)
-                    End If
-                Next
-                Continue For
-            End If
-            If Not strAppend.Contains(strsplit(i).Trim()) Then
-                strAppend.Add(strsplit(i).Trim())
-            End If
-        Next
-        For Each str As String In strAppend
-            strOut = strOut + str + " "
-        Next
-        Return strOut.Trim()
-    End Function
-
-    Private Function FormatArea(ByVal strlist As String) As String
-        Dim delimiters As String() = New String() {",", " "}
-        Dim strsplit As String() = strlist.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
-        For i As Integer = 0 To strsplit.Length - 1
-            If strsplit(i).Equals("to") Then
-                Dim strReplace As String = ""
-                Dim istart As Integer = Convert.ToInt32(strsplit(i - 1))
-                Dim iend As Integer = Convert.ToInt32(strsplit(i + 1))
-                For j As Integer = istart To iend
-                    strReplace = (strReplace & Convert.ToString(" ")) + j.ToString()
-                Next
-                strReplace = strReplace.Trim()
-                If Not String.IsNullOrEmpty(strReplace) Then
-                    strlist = strlist.Replace(istart.ToString() + " to " + iend.ToString(), strReplace).Replace(istart.ToString() + "to" + iend.ToString(), strReplace)
-                End If
-            End If
-        Next
-        strlist = strlist.Trim().Replace(" ", ",")
-        Return strlist
-    End Function
-    Public Function GetRegion(ByRef iRegion As Integer, ByRef sidFromGsa As String, ByRef area As String) As Boolean
-        'REGION.4 | ref | name | colour | plane | region | nodes | lines | areas |
-        'CM2_MESHTOOLS | split | triangle | odd | opti | target | gradation | quality | 
-        'shape | offset | elem | soil | size @end 
-        Dim sGwaCommand As String = CStr(m_GSAObject.GwaCommand("GET,REGION," & iRegion.ToString))
-        Dim sArg As String = GsaComUtil.Arg(0, sGwaCommand)
-        sidFromGsa = GsaComUtil.ExtractId(sArg) ' sid
-        area = GsaComUtil.Arg(8, sGwaCommand)
-        area = FormatArea(area)
     End Function
     Public Function IsEqual(ByRef pt1 As Double(), ByRef pt2 As Double()) As Boolean
         Dim bEqual As Boolean = False
@@ -2285,279 +1860,13 @@ Public Class GsaComUtil
         End If
         Return bEqual
     End Function
-    Public Function LineTypeOfLine(ByRef pt1 As Double(), ByRef pt2 As Double(), ByRef pt3 As Double(), ByRef type As LineType) As Integer
-        Dim ListofLine As List(Of Integer) = LineOfArcType()
-        For Each i As Integer In ListofLine
-
-            Dim iNode0, iNode1, iNode2 As Integer
-            Dim sidline As String = ""
-            Dim bEqual As Boolean = False
-            GetLine(i, sidline, iNode0, iNode1, iNode2, type)
-            If type.Equals(LineType.ARC_THIRD_PT) Then
-
-                Dim dNodeCord() As Double = ExtractNodeCoor(iNode0.ToString())
-                ChangeUnits(dNodeCord)
-                bEqual = IsEqual(dNodeCord, pt1)
-
-                Dim dNodeCord1() As Double = ExtractNodeCoor(iNode1.ToString())
-                ChangeUnits(dNodeCord1)
-                bEqual = bEqual AndAlso IsEqual(dNodeCord1, pt3)
-
-                Dim dNodeCord2() As Double = ExtractNodeCoor(iNode2.ToString())
-                ChangeUnits(dNodeCord2)
-                bEqual = bEqual AndAlso IsEqual(dNodeCord2, pt2)
-                If (bEqual) Then
-                    Return i
-                End If
-
-
-            Else
-
-                Dim dNodeCord() As Double = ExtractNodeCoor(iNode0.ToString())
-                ChangeUnits(dNodeCord)
-                bEqual = IsEqual(dNodeCord, pt1)
-
-                Dim dNodeCord1() As Double = ExtractNodeCoor(iNode1.ToString())
-                ChangeUnits(dNodeCord1)
-                bEqual = bEqual AndAlso IsEqual(dNodeCord1, pt2)
-                If (bEqual) Then
-                    Return i
-                End If
-            End If
-
-        Next
-        Return -1
-    End Function
-
-    Public Function GetRegion(ByRef iRegion As Integer, ByRef Lines As List(Of GSALine), ByRef iArea As List(Of Integer), ByRef iVoid As List(Of Integer)) As Boolean
-        'recreate lines to draw arc properly in GSA.
-        Try
-            Dim ListLine As New List(Of Double())
-            Dim ptToRemove As New List(Of Double())
-            Dim ptFinal As New List(Of Double())
-            Dim strLines() As String = Nothing
-            Dim arrArea() As Integer = Nothing
-            Dim arrVoid() As Integer = Nothing
-            Lines = New List(Of GSALine)
-            m_GSAObject.RegionPoints(iRegion, strLines, arrArea, arrVoid)
-
-            'Area
-            iArea = New List(Of Integer)
-            If (Not arrArea Is Nothing) Then
-                iArea.AddRange(arrArea)
-            End If
-
-            'void
-            iVoid = New List(Of Integer)
-            If (Not arrVoid Is Nothing) Then
-                iVoid.AddRange(arrVoid)
-            End If
-
-            'line
-            If (Not strLines Is Nothing) Then
-                For Each str As String In strLines
-                    Dim parts As String() = str.Replace("(", "").Replace(")", "").Trim().Split(New Char() {","c})
-                    Dim dbPoint() As Double = {0.0, 0.0, 0.0}
-                    dbPoint(0) = CType(parts(0), Double)
-                    dbPoint(1) = CType(parts(1), Double)
-                    dbPoint(2) = CType(parts(2), Double)
-                    ChangeUnits(dbPoint)
-                    ListLine.Add(dbPoint)
-                Next
-            End If
-
-
-
-            For Each pt As Double() In ListLine
-                Dim bFound As Boolean = False
-                For iLine As Integer = 1 To HighestLine()
-                    Dim iStart As Integer = 0
-                    Dim iEnd As Integer = 0
-                    Dim iMid As Integer = 0
-                    Dim Ltype As GsaComUtil.LineType = GsaComUtil.LineType.LINEAR
-                    Dim sidFromGsa As String = ""
-
-                    GetLine(iLine, sidFromGsa, iStart, iEnd, iMid, Ltype)
-                    If Ltype.Equals(LineType.ARC_THIRD_PT) Then
-                        Dim dNodeCord() As Double = ExtractNodeCoor(iStart.ToString())
-                        ChangeUnits(dNodeCord)
-
-                        If (IsEqual(pt, dNodeCord)) Then
-                            bFound = True
-                            Exit For
-                        End If
-
-
-                        Dim dNodeCord1() As Double = ExtractNodeCoor(iEnd.ToString())
-                        ChangeUnits(dNodeCord1)
-
-                        If (IsEqual(pt, dNodeCord1)) Then
-                            bFound = True
-                            Exit For
-                        End If
-
-                        Dim dNodeCord2() As Double = ExtractNodeCoor(iMid.ToString())
-                        ChangeUnits(dNodeCord2)
-
-                        If (IsEqual(pt, dNodeCord2)) Then
-                            bFound = True
-                            Exit For
-                        End If
-
-                    Else
-                        Dim dNodeCord() As Double = ExtractNodeCoor(iStart.ToString())
-                        ChangeUnits(dNodeCord)
-                        If (IsEqual(pt, dNodeCord)) Then
-                            bFound = True
-                            Exit For
-                        End If
-
-                        Dim dNodeCord1() As Double = ExtractNodeCoor(iEnd.ToString())
-                        ChangeUnits(dNodeCord1)
-                        If (IsEqual(pt, dNodeCord1)) Then
-                            bFound = True
-                            Exit For
-                        End If
-                    End If
-                Next
-                If (Not bFound) Then
-                    ptToRemove.Add(pt)
-                End If
-
-            Next
-
-            For Each pt As Double() In ListLine
-                If ptToRemove.Contains(pt) Then
-                    Continue For
-                End If
-                ptFinal.Add(pt)
-            Next
-
-            'GSALineDetail
-
-            For pt As Integer = 0 To ptFinal.Count - 1
-                Dim pt0 As Double() = ptFinal(pt)
-                Dim pt1 As Double() = Nothing
-                Dim pt2 As Double() = Nothing
-                If pt.Equals(ptFinal.Count - 1) Then
-                    pt1 = ptFinal(0)
-                    pt2 = ptFinal(1)
-                ElseIf pt.Equals(ptFinal.Count - 2) Then
-                    pt1 = ptFinal(pt + 1)
-                    pt2 = ptFinal(0)
-                Else
-                    pt1 = ptFinal(pt + 1)
-                    pt2 = ptFinal(pt + 2)
-                End If
-
-                Dim type As LineType = LineType.LINEAR
-                Dim intLineNumber As Integer = LineTypeOfLine(pt0, pt1, pt2, type)
-                If intLineNumber > 0 Then
-
-                    If type.Equals(LineType.ARC_THIRD_PT) Then
-                        Dim line As New GSALine
-                        line.StartPoint = pt0
-                        line.EndPoint = pt1
-                        line.MidPoint = pt2
-                        line.LineType = LineType.ARC_THIRD_PT
-                        Lines.Add(line)
-                    End If
-                    If type.Equals(LineType.ARC_RADIUS) Then
-                        Dim pt0Middle As Double() = ExtractInterMediateNodeCoorOnCurve(intLineNumber.ToString(), False)
-                        ChangeUnits(pt0Middle)
-                        Dim line As New GSALine
-                        line.StartPoint = pt0
-                        line.EndPoint = pt1
-                        line.MidPoint = pt0Middle
-                        line.LineType = LineType.ARC_THIRD_PT
-                        Lines.Add(line)
-                    End If
-
-                Else
-                    Dim line As New GSALine
-                    line.StartPoint = pt0
-                    line.EndPoint = pt1
-                    line.LineType = LineType.LINEAR
-                    Lines.Add(line)
-                End If
-
-            Next
-
-        Catch ex As Exception
-            Return False
-        End Try
-        Return True
-    End Function
-    Public Function SetArea(ByRef lines As ArrayList, ByRef iProp As Integer, ByVal uid As String) As Integer
-
-        'AREA.2 | ref | name | colour | type | span | property | group | lines | coefficient @end
-        'AREA.1 | ref | name | type | span | property | group | lines | coefficient 
-
-        Dim iArea As Integer = HighestArea()
-        iArea += 1
-        Dim sGwaCommand As String = "AREA"
-        sGwaCommand += "," + iArea.ToString()
-        sGwaCommand += ","                      'name
-        sGwaCommand += ",NO_RGB"                'colour   
-        sGwaCommand += "," + "TWO_WAY"          'type
-        sGwaCommand += "," + "0.0"              'span
-        sGwaCommand += "," + iProp.ToString()   'property
-        sGwaCommand += "," + "1"                'group
-        sGwaCommand += ","
-        For Each line As Integer In lines
-            sGwaCommand += " " + line.ToString() 'lines
-        Next
-        sGwaCommand += ","
-        sGwaCommand += ",0.0"                     'coefficient
-        m_GSAObject.GwaCommand(sGwaCommand)
-        If AreaExists(iArea) Then
-            m_GSAObject.WriteSidTagValue("AREA", iArea, "RVT", uid)
-        End If
-        Return iArea
-    End Function
-
-    'write a GSA Section
-    'Public Function SetSection(ByVal iSec As Integer, ByVal sName As String, ByVal uid As String, ByVal usage As SectionUsage,
-    '                           ByVal iAnalysisMat As Integer, ByVal sDesc As String, ByVal eMembType As MembType, ByVal eMatType As MembMat,
-    '                           Optional ByVal bNameMap As Boolean = False, Optional ByVal bDescMap As Boolean = False) As Integer
-    '    '//	PROP_SEC.3 | num | name | colour | mat | grade | anal | desc | cost @end
-    '    '//	PROP_SEC.2 | num | name | colour | member | desc | anal | mat | grade @end
-
-    '    Dim sGwaCommand As String = ""
-    '    If (0 = iSec) Then
-    '        iSec = HighestSection() + 1
-    '    End If
-    '    Dim sid As String = "{" & GsaComUtil.SectionSid_Symbol & ":" & uid & "}{" & GsaComUtil.SectionSid_Usage & ":" & usage.ToString() & "}"
-    '    If (bDescMap) Then
-    '        sid = "{" & "DESCRIPTION" & ":" & uid & "}{" & GsaComUtil.SectionSid_Usage & ":" & usage.ToString() & "}"
-    '    End If
-    '    If (bNameMap) Then
-    '        sid = "{" & "NAME" & ":" & uid & "}{" & GsaComUtil.SectionSid_Usage & ":" & usage.ToString() & "}"
-    '    End If
-
-    '    sGwaCommand = "PROP_SEC:"
-    '    sGwaCommand += "{RVT:" & sid & "}"
-    '    sGwaCommand += "," & iSec.ToString()        'number
-    '    sGwaCommand += "," & sName                  'name
-    '    sGwaCommand += ",NO_RGB"                    'colour
-    '    sGwaCommand += "," & MembMatStr(eMatType)   'material type
-    '    sGwaCommand += ",0"                         'grade
-    '    sGwaCommand += "," & iAnalysisMat.ToString() 'analysis material
-    '    sGwaCommand += "," & sDesc                  'description
-    '    sGwaCommand += ",0"                        'cost
-
-    '    m_GSAObject.GwaCommand(sGwaCommand)
-    '    Return iSec
-    'End Function
 
     Public Function SetSection(ByVal iSec As Integer, ByVal sName As String, ByVal uid As String, ByVal usage As SectionUsage,
-                               ByVal iAnalysisMat As Integer, ByVal sDesc As String, ByVal eMembType As MembType, ByVal eMatType As MembMat,
-                               Optional ByVal bNameMap As Boolean = False, Optional ByVal bDescMap As Boolean = False) As Integer
+                               ByVal iAnalysisMat As Integer, ByVal sDesc As String, ByVal eMatType As MembMat,
+                               ByVal justification As String, Optional ByVal bNameMap As Boolean = False, Optional ByVal bDescMap As Boolean = False) As Integer
         '//	PROP_SEC.3 | num | name | colour | mat | grade | anal | desc | cost @end
-        '//	PROP_SEC.2 | num | name | colour | member | desc | anal | mat | grade @end
-
         Dim sGwaCommand As String = ""
-        If (0 = iSec) Then
+        If (iSec <= 0) Then
             iSec = HighestSection() + 1
         End If
         Dim sid As String = "{" & GsaComUtil.SectionSid_Symbol & ":" & uid & "}{" & GsaComUtil.SectionSid_Usage & ":" & usage.ToString() & "}"
@@ -2578,6 +1887,8 @@ Public Class GsaComUtil
         sGwaCommand += ",0"                         'grade
         sGwaCommand += "," & sDesc                  'description
         sGwaCommand += ",0"                         'cost
+        sGwaCommand += "," & justification          'justification
+        sGwaCommand += ",0,0"                       'offset
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iSec
     End Function
@@ -2599,114 +1910,97 @@ Public Class GsaComUtil
         Return Me.SetSid("PROP_2D", iSec, sid)
     End Function
     'read a GSA Section
-    Public Function MemberType(ByVal iSec As Integer) As MembType
-        Dim sName As String = ""
-        Dim sid As String = ""
-        Dim iMat As Integer = 0
-        Dim sDes As String = ""
-        Dim eMembType As MembType = MembType.BEAM
-        Dim eMatType As MembMat = MembMat.CONCRETE
-        Section(iSec, sName, sid, iMat, sDes, eMembType, eMatType)
-        Return eMembType
-    End Function
-    Public Function MemberMaterial(ByVal iSec As Integer) As MembMat
-        Dim sName As String = ""
-        Dim sid As String = ""
-        Dim iMat As Integer = 0
-        Dim sDes As String = ""
-        Dim eMembType As MembType = MembType.BEAM
-        Dim eMatType As MembMat = MembMat.CONCRETE
-        Section(iSec, sName, sid, iMat, sDes, eMembType, eMatType)
-        Return eMatType
-    End Function
-    'read a GSA Section
-    Public Function Section(ByVal iSec As Integer, ByRef sName As String, ByRef sid As String, ByRef iMat As Integer, ByRef sDesc As String, ByRef eMembType As MembType, ByRef eMatType As MembMat) As Boolean
-        Dim usage As SectionUsage
-        Dim ret As Boolean = Section(iSec, sName, sid, usage, iMat, sDesc, eMembType, eMatType)
-        Return ret
-    End Function
-    Public Function Section(ByVal iSec As Integer, ByRef sName As String, ByRef sid As String, ByRef usage As SectionUsage, ByRef iAnalysisMat As Integer, ByRef sDesc As String, ByRef eMembType As MembType, ByRef eMatType As MembMat, Optional ByRef MapOp As String = "") As Boolean
+    Public Function Section(ByVal iSec As Integer, ByRef sName As String, ByRef sid As String, ByRef usage As GsaComUtil.SectionUsage, ByRef iAnalysisMat As Integer, ByRef sDesc As String, ByRef eMatType As GsaComUtil.MembMat, ByRef justification As String, Optional ByRef MapOp As String = "") As Boolean
 
-        If _SecList.ContainsKey(iSec) Then
-            Dim gsaSec As GSASection = _SecList(iSec)
-            iSec = gsaSec.Number
-            sName = gsaSec.Name
-            sid = gsaSec.Sid
-            usage = CType(gsaSec.SecUsage, SectionUsage)
-            sDesc = gsaSec.Desc
-            iAnalysisMat = gsaSec.AnalysisMat
-            MapOp = gsaSec.MapOp
-            eMatType = gsaSec.MaterialType
-            eMembType = gsaSec.MembType
-        Else
-            'PROP_SEC.2 | num | name | colour | member | desc | anal | mat | grade @end
-            '//	PROP_SEC.3 | num | name | colour | mat | grade | anal | desc | cost @end
-            If Not SectionExists(iSec) Then
-                Return False
-            End If
-            Dim gsaSec As New GSASection()
-            Dim sGwaCommand As String = ""
-            sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,PROP_SEC," & iSec.ToString))
-            If String.IsNullOrEmpty(sGwaCommand) Then
-                Return False
-            End If
-
-            Dim sArg As String
-            sArg = GsaComUtil.Arg(0, sGwaCommand)
-            Dim sidList As New SortedList(Of String, String)
-            Dim sid_string As String = GsaComUtil.ExtractId(sArg)
-            Me.ParseNestedSid(sid_string, sidList)
-
-            If sidList.ContainsKey(GsaComUtil.SectionSid_Usage) Then
-                Dim usageString As String = sidList(GsaComUtil.SectionSid_Usage)
-                If String.Equals(usageString, SectionUsage.COLUMNS.ToString()) Then
-                    usage = SectionUsage.COLUMNS
-                ElseIf String.Equals(usageString, SectionUsage.FRAMING.ToString()) Then
-                    usage = SectionUsage.FRAMING
-                End If
+        Try
+            If _SecList.ContainsKey(iSec) Then
+                Dim gsaSec As GSASection = _SecList(iSec)
+                iSec = gsaSec.Number
+                sName = gsaSec.Name
+                sid = gsaSec.Sid
+                usage = CType(gsaSec.SecUsage, SectionUsage)
+                sDesc = gsaSec.Desc
+                iAnalysisMat = gsaSec.AnalysisMat
+                MapOp = gsaSec.MapOp
+                eMatType = gsaSec.MaterialType
+                justification = gsaSec.justification
             Else
-                usage = SectionUsage.INVALID ' for now
+                'PROP_SEC.3 | num | name | colour | mat | grade | anal | desc | cost @end
+                If Not SectionExists(iSec) Then
+                    Return False
+                End If
+                Dim gsaSec As New GSASection()
+                Dim sGwaCommand As String = ""
+                sGwaCommand = CStr(m_GSAObject.GwaCommand("GET,PROP_SEC," & iSec.ToString))
+                If String.IsNullOrEmpty(sGwaCommand) Then
+                    Return False
+                End If
+
+                Dim sArg As String
+                sArg = GsaComUtil.Arg(0, sGwaCommand)
+                Dim sidList As New SortedList(Of String, String)
+                Dim sid_string As String = GsaComUtil.ExtractId(sArg)
+                Me.ParseNestedSid(sid_string, sidList)
+
+                If sidList.ContainsKey(GsaComUtil.SectionSid_Usage) Then
+                    Dim usageString As String = sidList(GsaComUtil.SectionSid_Usage)
+                    If String.Equals(usageString, SectionUsage.COLUMNS.ToString()) Then
+                        usage = SectionUsage.COLUMNS
+                    ElseIf String.Equals(usageString, SectionUsage.FRAMING.ToString()) Then
+                        usage = SectionUsage.FRAMING
+                    End If
+                Else
+                    usage = SectionUsage.INVALID ' for now
+                End If
+                gsaSec.SecUsage = usage
+                If sidList.ContainsKey(GsaComUtil.SectionSid_Symbol) Then
+                    sid = sidList(GsaComUtil.SectionSid_Symbol)
+                End If
+                MapOp = "SID"
+                If sidList.ContainsKey("DESCRIPTION") Then
+                    MapOp = "DESC"
+                    sid = sidList("DESCRIPTION")
+                End If
+                If sidList.ContainsKey("NAME") Then
+                    MapOp = "NAME"
+                    sid = sidList("NAME")
+                End If
+                gsaSec.Sid = sid
+                gsaSec.MapOp = MapOp
+
+                sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
+                Debug.Assert(Integer.Equals(iSec, CInt(sArg)))
+                gsaSec.Number = iSec
+                sArg = GsaComUtil.Arg(2, sGwaCommand) 'name
+                sName = sArg
+                gsaSec.Name = sName
+
+                sArg = GsaComUtil.Arg(4, sGwaCommand) 'material type
+                eMatType = MembMatFromStr(sArg)
+                gsaSec.MaterialType = eMatType
+
+                sArg = GsaComUtil.Arg(5, sGwaCommand) 'Analysis material
+                iAnalysisMat = CInt(sArg)
+                gsaSec.AnalysisMat = iAnalysisMat
+
+                sArg = GsaComUtil.Arg(7, sGwaCommand) 'description
+                sDesc = sArg.Replace("%", " ")
+                gsaSec.Desc = sDesc
+
+                justification = GsaComUtil.Arg(9, sGwaCommand) 'justification
+                gsaSec.justification = justification
+                _SecList.Add(iSec, gsaSec)
             End If
-            gsaSec.SecUsage = usage
-            If sidList.ContainsKey(GsaComUtil.SectionSid_Symbol) Then
-                sid = sidList(GsaComUtil.SectionSid_Symbol)
-            End If
-            If sidList.ContainsKey("DESCRIPTION") Then
-                MapOp = "DESC"
-                sid = sidList("DESCRIPTION")
-            End If
-            If sidList.ContainsKey("NAME") Then
-                MapOp = "NAME"
-                sid = sidList("NAME")
-            End If
-            gsaSec.Sid = sid
-            gsaSec.MapOp = MapOp
-            '//PROP_SEC.3 | num | name | colour | mat | grade | anal | desc | cost @end
-            sArg = GsaComUtil.Arg(1, sGwaCommand) 'number
-            Debug.Assert(Integer.Equals(iSec, CInt(sArg)))
-            gsaSec.Number = iSec
-            sArg = GsaComUtil.Arg(2, sGwaCommand) 'name
-            sName = sArg
-            gsaSec.Name = sName
-
-            sArg = GsaComUtil.Arg(4, sGwaCommand) 'material type
-            eMatType = MembMatFromStr(sArg)
-            gsaSec.MaterialType = eMatType
-
-            sArg = GsaComUtil.Arg(5, sGwaCommand) 'Analysis material
-            iAnalysisMat = CInt(sArg)
-            gsaSec.AnalysisMat = iAnalysisMat
-
-
-            sArg = GsaComUtil.Arg(7, sGwaCommand) 'description
-            sDesc = sArg
-            gsaSec.Desc = sDesc
-
-
-            _SecList.Add(iSec, gsaSec)
-        End If
-
+        Catch ex As Exception
+            Return False
+        End Try
         Return True
+    End Function
+    Function Is2D(ByVal type As MembType) As Boolean
+        If type.Equals(MembType.GENERIC_2D) OrElse type.Equals(MembType.WALL) OrElse type.Equals(MembType.SLAB) Then
+            Return True
+        End If
+        Return False
     End Function
     Function SectionUsageType(ByVal b2D As Boolean, ByVal strEnt As String, ByVal iSecNum As Integer, ByVal strVert As String, ByVal strInc As String, ByVal bFromMemeb As Boolean) As SectionUsage
 
@@ -2737,30 +2031,25 @@ Public Class GsaComUtil
             Dim iGeom As Integer = 0
             Dim dRadius As Double = 0
             Dim iTopo2 As Integer = 0
+            Dim endRestraint1 As String = ""
+            Dim endRestraint2 As String = ""
             ' Dim Mat As GsaComUtil.MembMat
             Dim bOut As Boolean = False
             Dim iTopoList As New List(Of Integer)
             Dim sTopo As String = ""
+            Dim eEntType As EntType = EntType.SEL_MEMBER
             If "MEMB" = strEnt Then
-
-                bOut = Member(iEnt, sName, iProp, uID, sTopo, dBeta, sRelease, dOffset, eMembtype)
-
+                bOut = Member(iEnt, sName, iProp, uID, sTopo, iOrNode, dBeta, sRelease, dOffset, eMembtype, endRestraint1, endRestraint2)
+                eEntType = EntType.SEL_MEMBER
                 If Not bOut Then
                     Continue For
                 End If
-                If eMembtype.Equals(MembType.WALL) OrElse eMembtype.Equals(MembType.SLAB) Then
-                    If Not b2D Then
-                        Continue For
-                    End If
-                End If
-                If eMembtype.Equals(MembType.BEAM) OrElse eMembtype.Equals(MembType.COLUMN) Then
-                    If b2D Then
-                        Continue For
-                    End If
+                If Not b2D.Equals(Is2D(eMembtype)) Then
+                    Continue For
                 End If
             Else
-
-                bOut = Elem1d(iEnt, iProp, uID, iTopoList, iOrNode, dBeta, sRelease, dOffset, eletype, eMembtype, strDummy)
+                eEntType = EntType.SEL_ELEM
+                bOut = Elem1d(iEnt, sName, iProp, uID, iTopoList, iOrNode, dBeta, sRelease, dOffset, eletype, strDummy)
                 If Not bOut Then
                     Continue For
                 End If
@@ -2773,7 +2062,13 @@ Public Class GsaComUtil
                 Continue For
             End If
 
-            'if option = Select Revit member type from GSA Member type.
+
+            Dim bVertical As Boolean = EntIsVertical(iEnt, eEntType)
+            Dim bHoriZontal As Boolean = EntIsHorizontal(iEnt, eEntType)
+            If b2D Then
+                bVertical = Not bHoriZontal
+            End If
+
             If (bFromMemeb) Then
                 If eMembtype.Equals(MembType.BEAM) Then
                     bFram = True
@@ -2788,83 +2083,36 @@ Public Class GsaComUtil
                     bWall = True
                     Continue For
                 End If
-            End If
-
-            Dim bVertical As Boolean = True
-            Dim bHoriZontal As Boolean = True
-            If "MEMB" = strEnt Then
-                Dim orderdNodes As List(Of List(Of Integer)) = Nothing
-                Dim voids As List(Of List(Of Integer)) = Nothing
-                Dim arcNodes As List(Of Integer) = Nothing
-                StringTolist(sTopo, orderdNodes, arcNodes, voids)
-
-                For Each nodes As List(Of Integer) In orderdNodes
-                    Dim iMax As Integer = Math.Max(nodes.Count - 3, 0)
-                    For node As Integer = 0 To iMax
-
-                        'first node
-                        Dim iNode As Integer = node
-                        Dim sNodeCord() As Double = ExtractNodeCoor(nodes.Item(iNode).ToString())
-
-                        'second node
-                        iNode = iNode + 1
-                        If iNode > nodes.Count - 1 Then
-                            iNode = iNode - 1
-                        End If
-                        Dim eMidCord() As Double = ExtractNodeCoor(nodes.Item(iNode).ToString())
-
-                        'third node
-                        iNode = iNode + 1
-                        If iNode > nodes.Count - 1 Then
-                            iNode = iNode - 1
-                        End If
-                        Dim eNodeCord() As Double = ExtractNodeCoor(nodes.Item(iNode).ToString())
-
-                        bVertical = IsInVerticalPlane(sNodeCord, eNodeCord, eMidCord)
-                        bHoriZontal = IsInHorizontalPlane(sNodeCord, eNodeCord, eMidCord)
-
-                    Next node
-                Next
             Else
-                bVertical = IsVertical(iEnt)
-                bHoriZontal = IsHorizontal(iEnt)
-            End If
-
-            Dim bColTemp As Boolean = bColm
-            Dim bFrmTemp As Boolean = bFram
-            Dim bWallTemp As Boolean = bWall
-            Dim bSlabTemp As Boolean = bSlab
-
-            If bVertical Then
-                If strVert.Contains("Columns") Then
-                    bColm = True
-                Else
-                    bFram = True
-                End If
-                bWall = True
-            Else
-                If bHoriZontal Then
-                    'horizontal
-                    bFram = True
-                Else
-                    'inclined
-                    If strInc.Contains("Columns") Then
+                If bVertical Then
+                    If strVert.Contains("Columns") Then
                         bColm = True
                     Else
                         bFram = True
                     End If
+                    bWall = True
+                Else
+                    If bHoriZontal Then
+                        'horizontal
+                        bFram = True
+                    Else
+                        'inclined
+                        If strInc.Contains("Columns") Then
+                            bColm = True
+                        Else
+                            bFram = True
+                        End If
+                    End If
+                    bSlab = True
                 End If
-                bSlab = True
             End If
 
             If b2D Then
-                If Not bWallTemp.Equals(bWall) AndAlso Not bSlabTemp.Equals(bSlab) Then
-                    'same section referred by wall/slab
+                If bSlab AndAlso bWall Then
                     Return SectionUsage.INVALID
                 End If
             Else
-                If Not bColTemp.Equals(bColm) AndAlso Not bFrmTemp.Equals(bFram) Then
-                    'same section referred by beam/column
+                If bFram AndAlso bColm Then
                     Return SectionUsage.INVALID
                 End If
             End If
@@ -2899,17 +2147,6 @@ Public Class GsaComUtil
 
     End Function
 
-    Public Shared Function IsIncline(ByVal startpoint() As Double, ByVal EndPoint() As Double) As Boolean
-        Dim vect() As Double = {EndPoint(0) - startpoint(0), EndPoint(1) - startpoint(1), EndPoint(2) - startpoint(2)}
-        Dim denom As Double = (Math.Sqrt(Math.Pow(vect(0), 2) + Math.Pow(vect(1), 2) + Math.Pow(vect(2), 2)))
-        Dim alpha As Double = Abs(vect(0) / denom)
-        Dim beta As Double = Abs(vect(1) / denom)
-        Dim gamma As Double = Abs(vect(2) / denom)
-        If alpha > 0.0001 OrElse beta > 0.0001 OrElse gamma > 0.0001 Then
-            Return True
-        End If
-        Return False
-    End Function
     Public Shared Function IsEqual(ByVal d1 As Double, ByVal d2 As Double, ByVal Tol As Double) As Boolean
         If Abs(d1 - d2) < Tol Then
             Return True
@@ -2918,72 +2155,6 @@ Public Class GsaComUtil
         End If
     End Function
 
-    Public Shared Function IsInVerticalPlane(ByVal startpoint() As Double, ByVal EndPoint() As Double, ByVal MidPoint() As Double) As Boolean
-        Dim x1 As Double = startpoint(0)
-        Dim x2 As Double = EndPoint(0)
-        Dim x3 As Double = MidPoint(0)
-        Dim Tolerance As Double = 0.1
-        Dim b1 As Boolean = IsEqual(x1, x2, Tolerance)
-        Dim b2 As Boolean = IsEqual(x2, x3, Tolerance)
-
-        Dim y1 As Double = startpoint(1)
-        Dim y2 As Double = EndPoint(1)
-        Dim y3 As Double = MidPoint(1)
-        Dim b3 As Boolean = IsEqual(y1, y2, Tolerance)
-        Dim b4 As Boolean = IsEqual(y2, y3, Tolerance)
-
-        If b1 AndAlso b2 AndAlso b3 AndAlso b4 Then
-            Return True
-        End If
-        Return False
-    End Function
-    Public Shared Function IsInHorizontalPlane(ByVal startpoint() As Double, ByVal EndPoint() As Double, ByVal MidPoint() As Double) As Boolean
-        Dim Tolerance As Double = 0.1
-        Dim z1 As Double = startpoint(2)
-        Dim z2 As Double = EndPoint(2)
-        Dim z3 As Double = MidPoint(2)
-        Dim b1 As Boolean = IsEqual(z1, z2, Tolerance)
-        Dim b2 As Boolean = IsEqual(z2, z3, Tolerance)
-        If b1.Equals(True) AndAlso b2.Equals(True) Then
-            Return True
-        End If
-        Return False
-    End Function
-    Public Shared Function IsInclined(ByVal startpoint() As Double, ByVal EndPoint() As Double) As Boolean
-        Dim Vec As Double() = {EndPoint(0) - startpoint(0), EndPoint(1) - startpoint(1), EndPoint(2) - startpoint(2)}
-        Dim denom As Double = Math.Sqrt(Math.Pow(Vec(0), 2) + Math.Pow(Vec(1), 2) + Math.Pow(Vec(2), 2))
-        Dim alpha As Double = Abs(Vec(0) / denom)
-        Dim beta As Double = Abs(Vec(1) / denom)
-        Dim gamma As Double = Abs(Vec(2) / denom)
-        If alpha > 0.0001 OrElse beta > 0.0001 OrElse gamma > 0.0001 Then
-            Return True
-        End If
-        Return False
-    End Function
-    Public Shared Function IsInHorizontal(ByVal CrossProduct() As Double) As Boolean
-        Dim EndPoint As Double() = {0, 0, 1}
-        Dim x1 As Double = CrossProduct(0)
-        Dim y1 As Double = CrossProduct(1)
-        Dim z1 As Double = CrossProduct(2)
-
-        Dim x2 As Double = EndPoint(0)
-        Dim y2 As Double = EndPoint(1)
-        Dim z2 As Double = EndPoint(2)
-        Dim VecCross As Double = (y1 * z2 - z1 * y2) - (x1 * z2 - z1 * x2) + (x1 * y2 - y1 * x2)
-        Return False
-    End Function
-    Public Shared Function IsInVertical(ByVal CrossProduct() As Double) As Boolean
-        Dim EndPoint As Double() = {1, 0, 0}
-        Dim x1 As Double = CrossProduct(0)
-        Dim y1 As Double = CrossProduct(1)
-        Dim z1 As Double = CrossProduct(2)
-
-        Dim x2 As Double = EndPoint(0)
-        Dim y2 As Double = EndPoint(1)
-        Dim z2 As Double = EndPoint(2)
-        Dim VecCross As Double = (y1 * z2 - z1 * y2) - (x1 * z2 - z1 * x2) + (x1 * y2 - y1 * x2)
-        Return False
-    End Function
     Public Function EntIsVertical(ByVal element As Integer, ByVal eType As EntType) As Boolean
         Dim iResult As Boolean = CType(m_GSAObject.ElemIsVertical(element, eType), Boolean)
         Return iResult
@@ -3011,22 +2182,16 @@ Public Class GsaComUtil
             Return CType(iResult, Boolean)
         End If
     End Function
-    Public Function Set2dProp(ByVal iProp As Integer, ByVal uid As String, ByVal usage As GsaComUtil.SectionUsage, ByVal sName As String, ByVal dThick As Double, ByVal eType As Type2D, ByVal eMaterType As GsaComUtil.MembMat, ByVal iMat As Integer) As Integer
-        'PROP_2D.5 | num | name | colour | type | axis | mat | mat_type | grade | design | thick | ref_pt | ref_z | @end
+    Public Function SetProp2D(ByVal iProp As Integer, ByVal uid As String, ByVal usage As GsaComUtil.SectionUsage, ByVal sName As String, ByVal description As String, ByVal eType As Type2D, ByVal eMaterType As GsaComUtil.MembMat, ByVal iMat As Integer) As Integer
+        'PROP_2D.8 | num | name | colour | type | axis | mat | mat_type | grade | design | profile | ref_pt | ref_z |
         'mass | flex | shear | inplane | weight | @end
-        'PROP_2D0.3 | num | name | colour | type | axis | mat | mat_type | grade | design | thick | ref_pt | ref_z | @end
-        'mass | flex | inplane | weight| bending | @End
-        'is_env { | energy | CO2A | CO2B | CO2C | CO2D | recycle | user }
-        'PROP_2D.2 | num | name | colour | axis | mat | type | thick | mass | bending
-        'PROP_2D.3 | num | name | colour | type | axis | mat | mat_type | grade | thick | ref_pt | @end
-        If (0 = iProp) Then
+        If (iProp <= 0) Then
             iProp = HighestProp2d() + 1
         End If
         sName = sName.Replace("""", String.Empty)
-        Dim sType As String = eType.ToString()
         Dim sid As String = "{" & GsaComUtil.SectionSid_Symbol & ":" & uid & "}{" & GsaComUtil.SectionSid_Usage & ":" & usage.ToString() & "}"
-        Dim sGwaCommand As String = "PROP_SEC:"
-        sGwaCommand += "{RVT:" & sid & "}"
+        Dim sGwaCommand As String = "PROP_2D:"
+        sGwaCommand += "{RVT:" & sid & "}" + ","
         sGwaCommand += iProp.ToString() + ","
         sGwaCommand += sName + ","
         sGwaCommand += "NO_RGB,"    'colour
@@ -3036,20 +2201,20 @@ Public Class GsaComUtil
         sGwaCommand += eMaterType.ToString() + ","
         sGwaCommand += iMat.ToString() + "," 'undefined
         sGwaCommand += "0," 'slab design peoperty
-        sGwaCommand += dThick.ToString() + ","
+        sGwaCommand += description + ","
         sGwaCommand += "CENTROID," 'refrence point centroid
         sGwaCommand += "0.0," 'set defuault offset to 0
-        sGwaCommand += "0.0,100%,100%,100%,100%,NO_ENV"
+        sGwaCommand += "0.0,100%,100%,100%,100%"
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iProp
     End Function
     'write a GSA Material
     Public Function SetMaterial(ByVal iMat As Integer, ByVal sName As String, ByVal sid As String, ByVal sDesc As String,
                                   ByVal dE As Double, ByVal dNu As Double, ByVal dG As Double, ByVal dRho As Double, ByVal dAlpha As Double,
-                                  ByVal dYield As Double, ByVal dUltimate As Double, ByVal dEh As Double, ByVal dBeta As Double, ByVal dDamp As Double) As Integer
+                                  ByVal dDamp As Double) As Integer
         Dim sGwaCommand As String = ""
 
-        If (iMat = 0) Then
+        If (iMat <= 0) Then
             iMat = HighestMaterial() + 1
         End If
         ' ++
@@ -3068,10 +2233,6 @@ Public Class GsaComUtil
         sGwaCommand += "," & dRho.ToString
         sGwaCommand += "," & dAlpha.ToString
         sGwaCommand += "," & dG.ToString
-        ' sGwaCommand += "," & dYield.ToString
-        'sGwaCommand += "," & dUltimate.ToString
-        ' sGwaCommand += "," & dEh.ToString
-        'sGwaCommand += "," & dBeta.ToString
         sGwaCommand += "," & dDamp.ToString
         sGwaCommand += ",0,0"
         m_GSAObject.GwaCommand(sGwaCommand)
@@ -3079,9 +2240,9 @@ Public Class GsaComUtil
     End Function
 
     'read a GSA Material
-    Public Function Material(ByVal iMat As Integer, ByRef sName As String, ByRef sDesc As String, ByRef sidFromGsa As String,
+    Public Function Material(ByVal iMat As Integer, ByRef sName As String, ByRef sid As String, ByRef sDesc As String,
                                     ByRef dE As Double, ByRef dNu As Double, ByRef dG As Double, ByRef dRho As Double, ByRef dAlpha As Double,
-                                    ByRef dYield As Double, ByRef dUltimate As Double, ByRef dEh As Double, ByRef dBeta As Double, ByRef dDamp As Double) As Boolean
+                                    ByRef dDamp As Double) As Boolean
         If Not MaterialExists(iMat) Then
             Return False
         End If
@@ -3099,7 +2260,7 @@ Public Class GsaComUtil
         End If
         Dim iCount As Integer = 0
         sArg = GsaComUtil.Arg(iCount, sGwaCommand)
-        sidFromGsa = GsaComUtil.ExtractId(sArg) ' sid
+        sid = GsaComUtil.ExtractId(sArg) ' sid
         iCount = iCount + 1
         sArg = GsaComUtil.Arg(iCount, sGwaCommand) 'number
         Debug.Assert(Integer.Equals(iMat, CInt(sArg)))
@@ -3130,17 +2291,6 @@ Public Class GsaComUtil
         sArg = GsaComUtil.Arg(iCount, sGwaCommand)
         dG = Val(sArg)
 
-        'sArg = GsaComUtil.Arg(10, sGwaCommand)
-        'dYield = Val(sArg)
-
-        'sArg = GsaComUtil.Arg(11, sGwaCommand)
-        'dUltimate = Val(sArg)
-
-        'sArg = GsaComUtil.Arg(12, sGwaCommand)
-        'dEh = Val(sArg)
-
-        'sArg = GsaComUtil.Arg(13, sGwaCommand)
-        'dBeta = Val(sArg)
         iCount = iCount + 1
         sArg = GsaComUtil.Arg(iCount, sGwaCommand)
         dDamp = Val(sArg)
@@ -3148,39 +2298,20 @@ Public Class GsaComUtil
         Return True
 
     End Function
-    Public Function Material(ByVal iMat As Integer, ByRef sName As String, ByRef sDesc As String, ByRef sid As String) As Boolean
-
-        Dim dE As Double = 0.0,
-            dNu As Double = 0.0,
-            dG As Double = 0.0,
-            dRho As Double = 0.0,
-            dAlpha As Double = 0.0,
-            dYield As Double = 0.0,
-            dUltimate As Double = 0.0,
-            dEh As Double = 0.0,
-            dBeta As Double = 0.0,
-            dDamp As Double = 0.0
-
-        Dim ret As Boolean = Me.Material(iMat, sName, sDesc, sid, dE, dNu, dG, dRho, dAlpha, dYield, dUltimate, dEh, dBeta, dDamp)
-        Return ret
+    Function RestraintOptID(ByVal opt As String) As Integer
+        Dim iOption As Integer = 0
+        Select Case opt
+            Case "AUTOMATIC", "0"
+                iOption = 0
+            Case "EXPLICIT", "1"
+                iOption = 1
+            Case "EFF_LEN", "2"
+                iOption = 2
+            Case Else
+                iOption = 0
+        End Select
+        Return iOption
     End Function
-    Public Function MaterialIsIsotropic(ByVal iMat As Integer) As Boolean
-        If Not Me.MaterialExists(iMat) Then
-            Return False
-        End If
-        Dim commandResult As String = CStr(m_GSAObject.GwaCommand("GET, MAT," & iMat))
-        If String.IsNullOrEmpty(commandResult) Then
-            Return False
-        End If
-
-        Dim arg As String = GsaComUtil.Arg(0, commandResult)
-        If arg.Contains("MAT_ISO") Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-
     Function ElemTypeFromString(ByVal sKey As String) As ElemType
 
         ' strip the string of sid if any
@@ -3221,27 +2352,7 @@ Public Class GsaComUtil
 
         Return etype
     End Function
-    Function ElemTypeIsBeam(ByVal etype As ElemType) As Boolean
-        Select Case etype
-            Case ElemType.EL_BAR, ElemType.EL_BEAM, ElemType.EL_STRUT, ElemType.EL_TIE
-                Return True
-            Case Else
-                Return False
-        End Select
 
-    End Function
-    Function ElemTypeString(ByVal eType As ElemType) As String
-        Dim sType As String = ""
-        Select Case eType
-            Case ElemType.EL_FLATPLATE
-                sType = "PLATE"
-            Case ElemType.EL_PLANESTRESS
-                sType = "STRESS"
-            Case Else
-                sType = "PLATE"
-        End Select
-        Return sType
-    End Function
     Public Sub SetGsaModelUnits(ByVal units As GsaComUtil.Units)
         Select Case units
             Case GsaComUtil.Units.IMPERIAL
@@ -3266,6 +2377,14 @@ Public Class GsaComUtil
                 m_GSAObject.GwaCommand("UNIT_DATA,ACCEL,m/s²")
         End Select
     End Sub
+    Public Function GetGsaModelUnit(ByVal units As String) As String
+        Dim commandObj As Object = m_GSAObject.GwaCommand("GET,UNIT_DATA," + units.ToUpper())
+        If commandObj Is Nothing Then
+            Return ""
+        End If
+        Dim commandResult As String = commandObj.ToString()
+        Return GsaComUtil.Arg(2, commandResult)
+    End Function
     ''' <summary>
     ''' CAUTION: Special function for use ONLY for setting material units
     ''' </summary>
@@ -3277,48 +2396,8 @@ Public Class GsaComUtil
             m_GSAObject.GwaCommand(unitString)
         Next
     End Sub
-
-    Function ElemNumNode(ByVal eType As ElemType) As Integer
-
-        ' Get the number of nodes associated with the element type
-
-        ElemNumNode = 0
-
-        If (eType = ElemType.EL_GROUND) Then
-            ElemNumNode = 1
-        ElseIf (eType = ElemType.EL_MASS) Then
-            ElemNumNode = 1
-        ElseIf (eType = ElemType.EL_BEAM) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_BAR) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_TIE) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_STRUT) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_SPRING) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_LINK) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_CABLE) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_SPACER) Then
-            ElemNumNode = 2
-        ElseIf (eType = ElemType.EL_QUAD4) Then
-            ElemNumNode = 4
-        ElseIf (eType = ElemType.EL_QUAD8) Then
-            ElemNumNode = 8
-        ElseIf (eType = ElemType.EL_TRI3) Then
-            ElemNumNode = 3
-        ElseIf (eType = ElemType.EL_TRI6) Then
-            ElemNumNode = 6
-        End If
-
-    End Function
-
     Function ListName(ByVal iList As Integer) As String
         'LIST | num | name | type | list
-
         If Not Me.ListExists(iList) Then
             Return Nothing
         End If
@@ -3333,88 +2412,61 @@ Public Class GsaComUtil
         For Each it As Integer In lists
             cStrItem = cStrItem + " " + it.ToString()
         Next
-        Return cStrItem
+        Return cStrItem.Trim()
+    End Function
+    Public Function ListToArcString(ByRef lists As List(Of Integer)) As String
+        Debug.Assert(lists.Count.Equals(3))
+        Dim cStrItem As String = lists(0).ToString() + " a " + lists(1).ToString() + " " + lists(2).ToString()
+         Return cStrItem.Trim()
     End Function
     Public Sub StringTolist(ByVal sTopo As String, ByRef orderedNodes As List(Of List(Of Integer)), ByRef arcNode As List(Of Integer), ByRef voids As List(Of List(Of Integer)))
-        Dim bStart As Boolean = False
-        Dim bStartL As Boolean = False
-        Dim bNewKey As Boolean = False
-        Dim sVoids As List(Of Integer) = Nothing
-        Dim Nodes As New List(Of Integer)
+       
         orderedNodes = New List(Of List(Of Integer))
         arcNode = New List(Of Integer)
         voids = New List(Of List(Of Integer))
-        Dim words As String() = sTopo.Split(New Char() {" "c})
-        For i As Integer = 0 To words.Length - 1
-            Dim str As String = words(i)
-            Dim iNode As Integer = -1
-            ' do not read 
-            If str.Contains("L(") OrElse str.Contains("P(") Then
-                bNewKey = True
-                bStartL = True
-                If Nodes.Count > 0 Then
-                    orderedNodes.Add(Nodes)
-                    Nodes = New List(Of Integer)
-                End If
-                Continue For
-            ElseIf str.Contains(")") AndAlso bStartL Then
-                bStartL = False
-                Continue For
-            ElseIf bStartL Then
-                Continue For
-            End If
-            'reading void
-            If str.Contains("V(") Then
-                bNewKey = True
-                If Nodes.Count > 0 Then
-                    orderedNodes.Add(Nodes)
-                    Nodes = New List(Of Integer)
-                End If
-                sVoids = New List(Of Integer)
-                bStart = True
-                str = str.Replace("V(", "")
-                If Integer.TryParse(str, iNode) Then
-                    sVoids.Add(iNode)
-                End If
-                Continue For
-            ElseIf str.Contains(")") AndAlso bStart Then
-                bStart = False
-                str = str.Replace(")", "")
-                If Integer.TryParse(str, iNode) Then
-                    sVoids.Add(iNode)
-                End If
-                If sVoids.Count > 0 Then
-                    voids.Add(sVoids)
-                End If
-                Continue For
-            ElseIf bStart Then
-                If Integer.TryParse(str, iNode) Then
-                    sVoids.Add(iNode)
-                End If
-                Continue For
-            End If
-            If str.Contains("A") Then
-                str = str.Replace("A", "")
-                If Integer.TryParse(str, iNode) AndAlso iNode > 0 Then
-                    arcNode.Add(iNode)
-                End If
-            End If
-            If str.Contains("R") Then
-                str = str.Replace("R", "")
-            End If
-            If Not bNewKey Then
-                If Nodes.Count < 1 Then
-                    Nodes = New List(Of Integer)
-                End If
-            End If
+        If sTopo Is Nothing
+            Return
+        End If
+        Dim pattern As String = "(\(?[0-9a]\s*\)?)+|([AVLP][(]([0-9a]\s*)+[)])"
+        Dim rg As New Regex(pattern)
+        Dim items As New List(Of String)
+        For Each item As Match In rg.Matches(sTopo)
+            items.Add(item.Value)
+        Next
 
-            If Integer.TryParse(str, iNode) Then
-                Nodes.Add(iNode)
+       
+        For Each item As String In items
+            Dim voidList As New List(Of Integer)
+            Dim solidList As New List(Of Integer)
+            Dim words As String() = item.Split(New Char() {" "c})
+            Dim isAcrNode As Boolean = False
+            If item.Contains("P") OrElse item.Contains("L") Then
+                Continue For
             End If
-
-            If i = words.Length - 1 Then
-                orderedNodes.Add(Nodes)
-                Nodes = New List(Of Integer)
+            For Each word As String In words
+                If word.Trim().Equals("a") Then
+                    isAcrNode = True
+                    Continue For
+                End If
+                Dim wordString As String = word.Trim().Replace("(", "").Replace("V", "").Replace("A", "").Replace(")", "")
+                Dim nodeId As Integer = 0
+                If Integer.TryParse(wordString, nodeId) Then
+                    If item.Contains("V(") Then
+                        voidList.Add(nodeId)
+                    Else
+                        solidList.Add(nodeId)
+                    End If
+                    If isAcrNode Then
+                        arcNode.Add(nodeId)
+                        isAcrNode = False
+                    End If
+                End If
+            Next
+            If solidList.Count > 0 Then
+                orderedNodes.Add(solidList)
+            End If
+            If voidList.Count > 0 Then
+                voids.Add(voidList)
             End If
         Next
     End Sub
@@ -3436,28 +2488,6 @@ Public Class GsaComUtil
             Return False
         End If
     End Function
-    Public Function ListTypeIsArea(ByVal iList As Integer) As Boolean
-        Dim listString As String = Me.ListString(iList)
-        If String.IsNullOrEmpty(listString) Then
-            Return False
-        End If
-        If listString.Contains("AREA") Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-    Public Function ListTypeIsRegion(ByVal iList As Integer) As Boolean
-        Dim listString As String = Me.ListString(iList)
-        If String.IsNullOrEmpty(listString) Then
-            Return False
-        End If
-        If listString.Contains("AREA") Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
     Public Function ListTypeIsElement(ByVal iList As Integer) As Boolean
         Dim listString As String = Me.ListString(iList)
         If String.IsNullOrEmpty(listString) Then
@@ -3468,7 +2498,6 @@ Public Class GsaComUtil
         Else
             Return False
         End If
-
     End Function
     Function ListItemsInList(ByVal iList As Integer) As List(Of Integer)
         Dim check As Object = m_GSAObject.GwaCommand("EXIST,LIST," & iList.ToString())
@@ -3492,12 +2521,6 @@ Public Class GsaComUtil
         ElseIf result.Contains("MEMB") Then
             listType = "MEMB"
             sEnt = "MEMB"
-        ElseIf result.Contains("AREA") Then
-            listType = "AREA"
-            sEnt = "AREA"
-        ElseIf result.Contains("REGION") Then
-            listType = "REGION"
-            sEnt = "REGION"
         Else
             Return items
         End If
@@ -3517,14 +2540,11 @@ Public Class GsaComUtil
             End If
         Next
         Return items
-
     End Function
     Function ElemDesc(ByVal eType As ElemType) As String
 
         ' Get a string that describes the element
-
         ElemDesc = "UNDEF"
-
         If (eType = ElemType.EL_GROUND) Then
             ElemDesc = "GROUND"
         ElseIf (eType = ElemType.EL_MASS) Then
@@ -3555,15 +2575,6 @@ Public Class GsaComUtil
             ElemDesc = "TRI6"
         End If
 
-    End Function
-
-    'Function GsaGwaCommandObj(ByVal cGwaCommand As String) As System.Object
-    '    GsaGwaCommandObj = m_GSAObject.GwaCommand(cGwaCommand)
-    'End Function
-    Function SectUsage(ByVal sectionNum As Integer) As SectionUsage
-        Dim usageInt As Integer = m_GSAObject.SectionUsage(sectionNum, m_eSelType) ' Do this for member right now
-        Dim usage As SectionUsage = CType(usageInt, SectionUsage)
-        Return usage
     End Function
 
     Function CATSectionToSNFamily(ByVal parts As String(), ByVal usage As SectionUsage,
@@ -3681,7 +2692,6 @@ Public Class GsaComUtil
                     'Case ""
             End Select
         End If
-
         Select Case sShape
             Case "GI", "I"
                 ExtractDimensions_I(parts, dimensions, cf)
@@ -3896,24 +2906,14 @@ Public Class GsaComUtil
     End Function
 
     Function ParseModelSid(ByRef sids As SortedList(Of String, String)) As Boolean
-        'Dim oSid As Object = m_GSAObject.GwaCommand("GET,SID")
-        Dim sid_string As String = m_GSAObject.GetSidTagValue("SID", 1, "RVT")
-        If String.IsNullOrEmpty(sid_string) Then
-            'Debug.Assert(False)
+        Dim sidString As String = m_GSAObject.GetSidTagValue("SID", 1, "RVT")
+        If String.IsNullOrEmpty(sidString) Then
             Return False
         End If
-        Return Me.ParseNestedSid(sid_string, sids)
+        Return Me.ParseNestedSid(sidString, sids)
 
     End Function
-    'Function ParseSectionSid(ByVal iSec As Integer, ByRef sids As SortedList) As Boolean
 
-    '    Dim sid_string As String = m_GSAObject.GetSidTagValue("SEC_BEAM", iSec, "RVT")
-    '    If String.IsNullOrEmpty(sid_string) Then
-    '        Return False
-    '    End If
-    '    Return Me.ParseNestedSid(sid_string, sids)
-
-    'End Function
     Function ParseNestedSid(ByRef sid_string As String, ByRef sids As SortedList(Of String, String)) As Boolean
         'sid is of format {RVT:{key1:value1}{key2:value2}...}
 
@@ -3949,6 +2949,9 @@ Public Class GsaComUtil
         Dim command As String = "HIGHEST," + keyword
         Dim obj As Object = m_GSAObject.GwaCommand(command)
         Dim nRecord As Integer = CType(obj, Integer)
+        If nRecord < 0 Then
+            nRecord = 0
+        End If
         Return nRecord
     End Function
     Function HighestGridPlane() As Integer
@@ -3962,12 +2965,6 @@ Public Class GsaComUtil
     End Function
     Function HighestNode() As Integer
         Return Me.HighestRecord("NODE")
-    End Function
-    Function HighestLine() As Integer
-        Return Me.HighestRecord("LINE")
-    End Function
-    Function HighestArea() As Integer
-        Return Me.HighestRecord("AREA")
     End Function
     Function HighestSection() As Integer
         Return Me.HighestRecord("PROP_SEC")
@@ -3985,9 +2982,6 @@ Public Class GsaComUtil
     Function HighestList() As Integer
         Return Me.HighestRecord("LIST")
     End Function
-    Function HighestRegion() As Integer
-        Return Me.HighestRecord("REGION")
-    End Function
     Function HighestPolyLine() As Integer
         Return Me.HighestRecord("POLYLINE")
     End Function
@@ -3998,7 +2992,7 @@ Public Class GsaComUtil
         Return Me.HighestRecord("LOAD_GRID_LINE")
     End Function
     Function HighestGridPointLoad() As Integer
-        Return Me.HighestRecord("GRID_POINT_LOAD")
+        Return Me.HighestRecord("LOAD_GRID_POINT")
     End Function
     Function HighestLoadCase() As Integer
         Return Me.HighestRecord("LOAD_TITLE")
@@ -4023,12 +3017,6 @@ Public Class GsaComUtil
             Return True
         End If
 
-    End Function
-    Function RegionExists(ByVal iRegion As Integer) As Boolean
-        Return Me.ModuleRecordExists("REGION", iRegion)
-    End Function
-    Function ConnectionExist(ByVal iConnection As Integer) As Boolean
-        Return Me.ModuleRecordExists("MEMB_END", iConnection)
     End Function
     Function SectionExists(ByVal iSec As Integer, Optional ByVal bFresh As Boolean = False) As Boolean
         If bFresh Then
@@ -4056,15 +3044,6 @@ Public Class GsaComUtil
     End Function
     Function GridLineExists(ByVal iGridLine As Integer) As Boolean
         Return Me.ModuleRecordExists("GRID_LINE", iGridLine)
-    End Function
-    Function LineExists(ByRef iLine As Integer) As Boolean
-        If Not _LineListExist.ContainsKey(iLine) Then
-            _LineListExist.Add(iLine, Me.ModuleRecordExists("LINE", iLine))
-        End If
-        Return _LineListExist.Item(iLine)
-    End Function
-    Function AreaExists(ByRef iArea As Integer) As Boolean
-        Return Me.ModuleRecordExists("AREA", iArea)
     End Function
     Function EntExists(ByRef ent As String, ByVal iEnt As Integer) As Boolean
         If (ent.Equals("EL")) Then
@@ -4094,15 +3073,6 @@ Public Class GsaComUtil
         Return GetSidMaterial("MAT_ANAL", record)
     End Function
     ''' <summary>
-    ''' gets revit id for the element record
-    ''' </summary>
-    ''' <param name="record"></param>
-    ''' <returns></returns>
-    ''' <remarks>No need to extract RevitID again when using this</remarks>
-    Function ElemSid(ByRef record As Integer) As String
-        Return GetSid("EL", record)
-    End Function
-    ''' <summary>
     ''' gets revit id for the grid plane record
     ''' </summary>
     ''' <param name="record"></param>
@@ -4127,32 +3097,11 @@ Public Class GsaComUtil
     ''' <param name="record"></param>
     ''' <returns></returns>
     ''' <remarks></remarks>
-    Function EntSid(ByRef entity As String, ByRef record As Integer) As String
+    Function EntSid(ByVal entity As String, ByVal record As Integer) As String
         Return GetSid(entity, record)
     End Function
-    Function SectionSid(ByVal record As Integer) As SortedList(Of String, String)
-        Dim sid As String = GetSid("PROP_SEC", record)
-        Dim sidsMap As New SortedList(Of String, String)(2)
-        If ParseNestedSid(sid, sidsMap) Then
-            Return sidsMap
-        Else
-            Debug.Assert(False, "sid parsing failed for section " + record.ToString())
-            Return Nothing
-        End If
-    End Function
-    Function ElemIsSection(ByVal iElem As Integer) As Boolean
-        Dim sGwaCommand As String = "GET,EL," + iElem.ToString()
-        sGwaCommand = CStr(m_GSAObject.GwaCommand(sGwaCommand))
-        Dim sArg As String = GsaComUtil.Arg(4, sGwaCommand)
-        Dim eType As ElemType = Me.ElemTypeFromString(sArg)
 
-        If ElemTypeIsBeamOrTruss(eType) Then
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-    Function EntSection(ByRef entity As String, ByVal iEnt As Integer) As Integer
+    Function EntSection(ByVal entity As String, ByVal iEnt As Integer) As Integer
         Debug.Assert(String.Equals(entity, "EL") Or String.Equals(entity, "MEMB"))
         If Not Me.EntExists(entity, iEnt) Then
             Debug.Assert(False)
@@ -4169,11 +3118,12 @@ Public Class GsaComUtil
         dOffset As List(Of Double()) = Nothing,
         release As List(Of String) = Nothing
         Dim eleType As ElemType = ElemType.EL_BAR
-
+        Dim endRestraint1 As String = ""
+        Dim endRestraint2 As String = ""
         If String.Equals(entity, "EL") Then
-            Me.Elem1d(iEnt, iProp, uid, iTopoList, iOrNode, dBeta, release, dOffset, eleType, eMembtype, strDummy)
+            Me.Elem1d(iEnt, sName, iProp, uid, iTopoList, iOrNode, dBeta, release, dOffset, eleType, strDummy)
         Else
-            Me.Member(iEnt, sName, iProp, uid, sTopo, dBeta, release, dOffset, eMembtype)
+            Me.Member(iEnt, sName, iProp, uid, sTopo, iOrNode, dBeta, release, dOffset, eMembtype, endRestraint1, endRestraint2)
         End If
 
         Return iProp
@@ -4227,6 +3177,14 @@ Public Class GsaComUtil
         value = sArg.Substring(pos_value, i - 1)
         Return value
     End Function
+    Public Shared Function ExtractVesrion(ByVal sArg As String) As String
+        Dim tag As String = "RVT:"
+        If Not sArg.Contains(tag) Then
+            Return sArg
+        End If
+        Dim pos_tag As Integer = sArg.IndexOf(tag)
+        Return sArg.Substring(0, pos_tag - 2)
+    End Function
     Public Property SelType() As EntType
         Get
             Return m_eSelType
@@ -4235,5 +3193,19 @@ Public Class GsaComUtil
             m_eSelType = value
         End Set
     End Property
-
+     Public Shared Function DisplacementUnitFactor(ByVal unit As String) As Double
+        Dim dSectionDispFactor As Double = 1.0
+            If unit.Contains("(m)") Then
+                dSectionDispFactor = ToMilliMeter.FromMeter
+            ElseIf unit.Contains("(ft)") Then
+                dSectionDispFactor = ToMilliMeter.FromFeet
+            ElseIf unit.Contains("in") Then
+                dSectionDispFactor = ToMilliMeter.FromInch
+             ElseIf unit.Contains("cm") Then
+                dSectionDispFactor = ToMilliMeter.FromCentimeter
+            Else
+                dSectionDispFactor = 1.0
+            End If
+         Return dSectionDispFactor
+    End Function
 End Class

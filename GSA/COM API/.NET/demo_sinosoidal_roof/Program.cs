@@ -6,7 +6,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Oasys.Gsa.DotNetHelpers;
-using Interop.Gsa_10_0;
+using Interop.Gsa_10_2;
+using System.Xml.Linq;
 
 namespace demo_sinosoidal_roof
 {
@@ -25,7 +26,7 @@ namespace demo_sinosoidal_roof
             int n2_previous = 0;
             string strEnt = "EL";
 
-            string filePath = @"C:\Program Files\Oasys\GSA 9.0\Samples\Stair.gwb";
+            string filePath = Utils.DownloadExampleFile("Stair.gwb");
             string SavefilePath = @"C:\UpdatedStair.gwb";
             GsaComUtil m_gsaObj = new GsaComUtil();
 
@@ -60,7 +61,7 @@ namespace demo_sinosoidal_roof
                 _Offset.Add(offset1);
                 _Offset.Add(offset1);
 
-                m_gsaObj.SetElem1d(elem, 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR );
+                m_gsaObj.SetElem1d(elem, "", 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR);
 
                 elem = m_gsaObj.HighestEnt(ref strEnt) + 1;
 
@@ -68,14 +69,14 @@ namespace demo_sinosoidal_roof
                 {
                     _topo = new List<int>();_topo.Add(n1);_topo.Add(n1_previous);
 
-                    m_gsaObj.SetElem1d(elem, 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR);
+                    m_gsaObj.SetElem1d(elem, "", 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR);
                 }
 
                 elem = m_gsaObj.HighestEnt(ref strEnt) + 1;
                 if ((n2_previous != 0))
                 {
                     _topo = new List<int>(); _topo.Add(n2); _topo.Add(n2_previous);
-                    m_gsaObj.SetElem1d(elem, 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR);
+                    m_gsaObj.SetElem1d(elem, "", 1, "", _topo, 0, 0, _Release, _Offset, GsaComUtil.ElemType.EL_BAR);
                 }
                 n1_previous = n1;
                 n2_previous = n2;
@@ -89,6 +90,9 @@ namespace demo_sinosoidal_roof
             strEnt = "EL"; int elemHigh = m_gsaObj.HighestEnt(ref strEnt);
             List<GsaElement> lstElem = new List<GsaElement>();
             List<GsaNode> lstNode = new List<GsaNode>();
+            double[] Stiff = { 0, 0, 0, 0, 0, 0 };
+            int[] restraint = { 0, 0, 0, 0, 0, 1 };
+
             for (int i = 51; i <= 100; i++)
             {
              
@@ -98,10 +102,10 @@ namespace demo_sinosoidal_roof
 
                 //start node
                 double[] Coor0 = { x, y, z };
-                double[] Stiff = { 0, 0, 0, 0, 0, 0 };
                 GsaNode gNode0 = new GsaNode();
                 gNode0.Coor = Coor0;
-                gNode0.Stiffness = Stiff;
+                gNode0.SpringProperty = 1;
+                gNode0.Restraint = restraint;
                 gNode0.Ref = ++nodeHigh;
                 lstNode.Add(gNode0);
               
@@ -111,7 +115,8 @@ namespace demo_sinosoidal_roof
                 double[] Coor1 = { x, y, z };
                 GsaNode gNode1 = new GsaNode();
                 gNode1.Coor = Coor1;
-                gNode1.Stiffness = Stiff;
+                gNode1.SpringProperty = 1;
+                gNode1.Restraint = restraint;
                 gNode1.Ref = ++nodeHigh;
                 lstNode.Add(gNode1);
              

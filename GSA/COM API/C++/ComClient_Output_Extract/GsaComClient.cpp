@@ -5,7 +5,7 @@
 #include "GsaComClient.h"
 #include "GsaComClientDlg.h"
 #include <string>
-#import "C:\\Program Files\\Oasys\\GSA 10.0\\Gsa.tlb" no_namespace
+#import "C:\\Program Files\\Oasys\\GSA 10.2\\Gsa.tlb" no_namespace
 // replace the above with path to GSA.tlb in the program files folder
 
 #ifdef _DEBUG
