@@ -38,7 +38,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>..\..\programs64_d\</OutputPath>
+    <OutputPath>.\</OutputPath>
     <DocumentationFile>DotNetHelpers.xml</DocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>42353,42354,42355</NoWarn>
