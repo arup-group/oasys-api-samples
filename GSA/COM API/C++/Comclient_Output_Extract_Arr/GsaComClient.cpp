@@ -7,7 +7,7 @@
 
 
 #include <string>
-#import "C:\\Program Files\\Oasys\\GSA 10.1\\Gsa.tlb" no_namespace
+#import "C:\\Program Files\\Oasys\\GSA 10.2\\Gsa.tlb" no_namespace
 // replace the above with path to GSA.tlb in the program files folder
 
 #ifdef _DEBUG
@@ -100,8 +100,7 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 	ASSERT(ret_code ==0);
 	long NumberOfIntermediatPoint = 4;
 	CFile theFile;
-	pObj->Output_Init_Arr((long)Output_Init_Flags::OP_INIT_1D_AUTO_PTS,_bstr_t(L"default"), _bstr_t("A1"),ResHeader::REF_DISP_EL1D,NumberOfIntermediatPoint);
-
+	
 	
 	_variant_t vt = pObj->GwaCommand("HIGHEST,EL");
 	 vt.ChangeType(VT_I4);
@@ -124,6 +123,7 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 			if(elemExist)
 			{
 				WriteString(theFile,_T("Forces in Element: " + strEle));
+				pObj->Output_Init_Arr((long)Output_Init_Flags::OP_INIT_1D_AUTO_PTS, _bstr_t(L"default"), _bstr_t("A1"), ResHeader::REF_DISP_EL1D, NumberOfIntermediatPoint);
 				pObj->Output_Extract_Arr(ele + 1,&arryResult,&component);
 				HRESULT hr =  SafeArrayAccessData(arryResult,(void**) &gsRes);
 

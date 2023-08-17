@@ -9,7 +9,7 @@
 import win32com.client  # https://pypi.org/project/pywin32/
 import requests  # https://pypi.org/project/requests/    HTTP library
 
-gsa_obj = win32com.client.Dispatch("Gsa_10_1.ComAuto")
+gsa_obj = win32com.client.Dispatch("Gsa_10_2.ComAuto")
 
 print("Downloading sample stair model")
 sample_model = requests.get(

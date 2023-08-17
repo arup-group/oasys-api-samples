@@ -17,7 +17,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -33,16 +33,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <!-- paths to libraries -->
-    <InteropDllPath>..\..\programs64_d\Interop.Gsa_10_0.dll</InteropDllPath>
-    <InteropDllPathCopy>..\GsaCOM\Debug\x64\</InteropDllPathCopy>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <!-- paths to libraries -->
-    <InteropDllPath>..\programs64\Interop.Gsa_10_0.dll</InteropDllPath>
-    <InteropDllPathCopy>..\gsrevit\GsaCOM\Release\x64\</InteropDllPathCopy>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -95,12 +85,12 @@
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.Gsa_10_0" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.0\Interop.Gsa_10_0.dll</HintPath>
+    <Reference Include="Interop.Gsa_10_2" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_2.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Interop.Gsa_10_0" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.0\Interop.Gsa_10_0.dll</HintPath>
+    <Reference Include="Interop.Gsa_10_2" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_2.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
@@ -109,7 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Import Include="Interop.Gsa_10_0" />
+    <Import Include="Interop.Gsa_10_2" />
     <Import Include="Microsoft.SqlServer.Server" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="Oasys.Gsa" />
@@ -122,6 +112,7 @@
     <Import Include="System.Diagnostics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class3D.vb" />
     <Compile Include="GsaComUtil.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -187,8 +178,4 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
 </Project>
