@@ -1608,7 +1608,7 @@ Public Class GsaComUtil
         sGwaCommand += "," + iOrNode.ToString()     'orientation node
         sGwaCommand += "," + dBeta.ToString()       'orientation angle
         sGwaCommand += "," + "RLS"                  'is_rls
-        Debug.Assert(iTopoList.Count.Equals(sRelease.Count))
+      
         For Each rels As String In sRelease
             sGwaCommand += "," + rels      'topo 
             For Each c As Char In rels

@@ -18,8 +18,7 @@ namespace demo_sinosoidal_roof
             double pi_by_32 = Math.PI / 32;
             double scale = 5;
             double tol = 0.01;
-            string release1 = "FFFFFF";
-            string release2 = "FFFFFF";
+         
             double[] offset1 = { 0, 0, 0 };
             double[] offset2 = { 0, 0, 0 };
             int n1_previous = 0;
@@ -54,9 +53,6 @@ namespace demo_sinosoidal_roof
 
                
                 List<string> _Release = new List<string>();
-                _Release.Add(release1);
-                _Release.Add(release2);
-
                 List<double[]> _Offset = new List<double[]>();
                 _Offset.Add(offset1);
                 _Offset.Add(offset1);
