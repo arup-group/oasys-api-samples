@@ -6,3 +6,8 @@ venv
 __pycache__
 .vs
 packages
+DawnCache
+GPUCache
+*.png
+*.lok
+*.bak

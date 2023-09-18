@@ -1,4 +1,5 @@
-﻿Imports Interop.Gsa_10_0
+﻿Imports System.IO
+Imports Gsa_10_2
 
 Module Module1
     Dim sv_gwa As String = "GR_VIEW.17	134218690	63	test	0	0	755	296	1	9	\
@@ -26,8 +27,13 @@ Module Module1
     Sub Main()
         Dim gsa As New ComAuto
         ' this is the GSA file that has our view templates
-        gsa.Open("viewtemplates.gwb")
 
+        Dim current_directory As String = Directory.GetCurrentDirectory()
+        Dim template_relative_path As String = "..\..\sample_files\view_templates.gwb"
+        Dim gsa_file_relative_path As String = "..\..\sample_files\steel_design_medium.gwb"
+        Dim full_path As String = Path.Combine(current_directory, template_relative_path)
+
+        gsa.Open(full_path)
         Dim ref_template_contour = gsa.ViewRefFromName("SGV", "template-contour")
         Dim ref_template_labels = gsa.ViewRefFromName("SGV", "template-labels")
 
@@ -35,7 +41,8 @@ Module Module1
         Dim label_template As String = gsa.GwaCommand("GET, GR_VIEW," & ref_template_labels)
         gsa.Close()
 
-        gsa.Open("steel_design_medium.gwb")
+        full_path = Path.Combine(current_directory, gsa_file_relative_path)
+        gsa.Open(full_path)
 
         ' Create a new saved view that will display a contour
         Dim viewRef As Integer = gsa.CreateNewView("contour")
