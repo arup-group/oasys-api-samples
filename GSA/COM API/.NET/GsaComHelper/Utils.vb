@@ -5,6 +5,9 @@ Imports System.Data
 Imports System.Text
 Imports System.Collections
 Imports System.Collections.Generic
+Imports System.Math
+Imports System.Net
+
 Public Structure OasysPoint
     Dim x As Integer
     Dim y As Integer
@@ -154,101 +157,8 @@ Public Class CsvFileReader
     End Function
 End Class
 
-
-Public Class GSALine
-    Public Sub New()
-
-    End Sub
-    Public Sub New(ByVal cIn As GSALine)
-        _iLine = cIn.LineNumber
-        _iNode0 = cIn.Node0
-        _iNode0 = cIn.Node1
-        _iNode2 = cIn.Node2
-        _iLineType = cIn.LineType
-        _StartPoint = cIn.StartPoint
-        _EndPoint = cIn.EndPoint
-        _MidPoint = cIn.MidPoint
-    End Sub
-    Private _iLine As Integer
-    Public Property LineNumber() As Integer
-        Get
-            Return _iLine
-        End Get
-        Set(ByVal value As Integer)
-            _iLine = value
-        End Set
-    End Property
-    Private _iNode0 As Integer
-    Public Property Node0() As Integer
-        Get
-            Return _iNode0
-        End Get
-        Set(ByVal value As Integer)
-            _iNode0 = value
-        End Set
-    End Property
-    Private _iNode1 As Integer
-    Public Property Node1() As Integer
-        Get
-            Return _iNode1
-        End Get
-        Set(ByVal value As Integer)
-            _iNode1 = value
-        End Set
-    End Property
-    Private _iNode2 As Integer
-    Public Property Node2() As Integer
-        Get
-            Return _iNode2
-        End Get
-        Set(ByVal value As Integer)
-            _iNode2 = value
-        End Set
-    End Property
-
-    Private _iLineType As GsaComUtil.LineType
-    Public Property LineType() As GsaComUtil.LineType
-        Get
-            Return _iLineType
-        End Get
-        Set(ByVal value As GsaComUtil.LineType)
-            _iLineType = value
-        End Set
-    End Property
-
-    Private _StartPoint As Double()
-    Public Property StartPoint() As Double()
-        Get
-            Return _StartPoint
-        End Get
-        Set(ByVal value As Double())
-            _StartPoint = value
-        End Set
-    End Property
-    Private _EndPoint As Double()
-    Public Property EndPoint() As Double()
-        Get
-            Return _EndPoint
-        End Get
-        Set(ByVal value As Double())
-            _EndPoint = value
-        End Set
-    End Property
-    Private _MidPoint As Double()
-    Public Property MidPoint() As Double()
-        Get
-            Return _MidPoint
-        End Get
-        Set(ByVal value As Double())
-            _MidPoint = value
-        End Set
-    End Property
-End Class
 Public Class GSASection
     Public Sub New()
-
-    End Sub
-    Public Sub New(ByVal cIn As GSASection)
 
     End Sub
     Private _Sid As String
@@ -315,16 +225,6 @@ Public Class GSASection
         End Set
     End Property
 
-    Private _typeMemb As GsaComUtil.MembType
-    Public Property MembType() As GsaComUtil.MembType
-        Get
-            Return _typeMemb
-        End Get
-        Set(ByVal value As GsaComUtil.MembType)
-            _typeMemb = value
-        End Set
-    End Property
-
     Private _typeMaterial As GsaComUtil.MembMat
     Public Property MaterialType() As GsaComUtil.MembMat
         Get
@@ -332,6 +232,15 @@ Public Class GSASection
         End Get
         Set(ByVal value As GsaComUtil.MembMat)
             _typeMaterial = value
+        End Set
+    End Property
+    Private _justification As String
+    Public Property justification() As String
+        Get
+            Return _justification
+        End Get
+        Set(ByVal value As String)
+            _justification = value
         End Set
     End Property
 
@@ -349,11 +258,9 @@ Public Class MemberElement
         _uid = cIn.UID
         _sRelease = cIn.Release
         _dOffset = cIn.Offset
-        _dRadius = cIn.Radius
         _TopoList = New List(Of Integer)(cIn.Topo)
         _dBeta = cIn.Beta
         _mtype = cIn.MemberType
-        _typeMaterial = cIn.MembMaterialType
     End Sub
 
     Private _iEle As Integer
@@ -446,16 +353,6 @@ Public Class MemberElement
         End Set
     End Property
 
-    Private _dRadius As Double
-    Public Property Radius() As Double
-        Get
-            Return _dRadius
-        End Get
-        Set(ByVal value As Double)
-            _dRadius = value
-        End Set
-    End Property
-
     Private _dBeta As Double
     Public Property Beta() As Double
         Get
@@ -475,6 +372,15 @@ Public Class MemberElement
             _dOffset = value
         End Set
     End Property
+    Private _etype As GsaComUtil.ElemType
+    Public Property ElementType() As GsaComUtil.ElemType
+        Get
+            Return _etype
+        End Get
+        Set(ByVal value As GsaComUtil.ElemType)
+            _etype = value
+        End Set
+    End Property
     Private _mtype As GsaComUtil.MembType
     Public Property MemberType() As GsaComUtil.MembType
         Get
@@ -484,72 +390,26 @@ Public Class MemberElement
             _mtype = value
         End Set
     End Property
-    Private _typeMaterial As GsaComUtil.MembMat
-    Public Property MembMaterialType() As GsaComUtil.MembMat
+    Private _endrestraint1 As String
+    Public Property Endrestraint1() As String
         Get
-            Return _typeMaterial
+            Return _endrestraint1
         End Get
-        Set(ByVal value As GsaComUtil.MembMat)
-            _typeMaterial = value
+        Set(ByVal value As String)
+            _endrestraint1 = value
+        End Set
+    End Property
+    Private _endrestraint2 As String
+    Public Property Endrestraint2() As String
+        Get
+            Return _endrestraint2
+        End Get
+        Set(ByVal value As String)
+            _endrestraint2 = value
         End Set
     End Property
 
 End Class
-Public Class Vector3
-    Public X As Double
-    ' Length of a box
-    Public Y As Double
-    ' Breadth of a box
-    Public Z As Double
-    ' Height of a box
-    Public Sub New()
-        X = 0
-        Y = 0
-        Z = 0
-    End Sub
-    Public Sub New(InX As Double, InY As Double, InZ As Double)
-        X = InX
-        Y = InY
-        Z = InZ
-    End Sub
-
-    Public Sub setX(InX As Double)
-        X = InX
-    End Sub
-    Public Shared Function Empty() As Vector3
-        Dim box As New Vector3()
-        box.X = 0
-        box.Y = 0
-        box.Z = 0
-        Return box
-    End Function
-    Public Function LengthSq() As Double
-        Return X * X + Y * Y + Z * Z
-    End Function
-    Public Sub setY(InY As Double)
-        Y = InY
-    End Sub
-    Public Sub setZ(InZ As Double)
-        Z = InZ
-    End Sub
-    ' Overload + operator to add two Box objects.
-    Public Shared Operator +(b As Vector3, c As Vector3) As Vector3
-        Dim box As New Vector3()
-        box.X = b.X + c.X
-        box.Y = b.Y + c.Y
-        box.Z = b.Z + c.Z
-        Return box
-    End Operator
-    ' Overload + operator to add two Box objects.
-    Public Shared Operator -(b As Vector3, c As Vector3) As Vector3
-        Dim box As New Vector3()
-        box.X = b.X - c.X
-        box.Y = b.Y - c.Y
-        box.Z = b.Z - c.Z
-        Return box
-    End Operator
-End Class
-
 
 Public Class Utils
 
@@ -570,83 +430,6 @@ Public Class Utils
             Return False
         End If
     End Function
-    Public Shared Function onSegment(ByVal p As OasysPoint, ByVal q As OasysPoint, ByVal r As OasysPoint) As Boolean
-        If (q.x <= Math.Max(p.x, r.x)) AndAlso (q.x >= Math.Min(p.x, r.x)) AndAlso
-            (q.y <= Math.Max(p.y, r.y)) AndAlso (q.y >= Math.Min(p.y, r.y)) Then
-            Return True
-        End If
-        Return False
-    End Function
-    Public Shared Function CalculateLineLineIntersection(line1Point1 As Vector3, line1Point2 As Vector3, line2Point1 As Vector3, line2Point2 As Vector3, ByRef resultSegmentPoint1 As Vector3, ByRef resultSegmentPoint2 As Vector3) As Boolean
-        'http://paulbourke.net/geometry/pointlineplane/
-        resultSegmentPoint1 = Vector3.Empty
-        resultSegmentPoint2 = Vector3.Empty
-        Dim p1 As Vector3 = line1Point1
-        Dim p2 As Vector3 = line1Point2
-        Dim p3 As Vector3 = line2Point1
-        Dim p4 As Vector3 = line2Point2
-        Dim p13 As Vector3 = p1 - p3
-        Dim p43 As Vector3 = p4 - p3
-
-        If p43.LengthSq() < 0 Then
-            Return False
-        End If
-        Dim p21 As Vector3 = p2 - p1
-        If p21.LengthSq() < 0 Then
-            Return False
-        End If
-
-        Dim d1343 As Double = p13.X * CDbl(p43.X) + CDbl(p13.Y) * p43.Y + CDbl(p13.Z) * p43.Z
-        Dim d4321 As Double = p43.X * CDbl(p21.X) + CDbl(p43.Y) * p21.Y + CDbl(p43.Z) * p21.Z
-        Dim d1321 As Double = p13.X * CDbl(p21.X) + CDbl(p13.Y) * p21.Y + CDbl(p13.Z) * p21.Z
-        Dim d4343 As Double = p43.X * CDbl(p43.X) + CDbl(p43.Y) * p43.Y + CDbl(p43.Z) * p43.Z
-        Dim d2121 As Double = p21.X * CDbl(p21.X) + CDbl(p21.Y) * p21.Y + CDbl(p21.Z) * p21.Z
-
-        Dim denom As Double = d2121 * d4343 - d4321 * d4321
-        If Math.Abs(denom) < 0 Then
-            Return False
-        End If
-        Dim numer As Double = d1343 * d4321 - d1321 * d4343
-
-        Dim mua As Double = numer / denom
-        Dim mub As Double = (d1343 + d4321 * (mua)) / d4343
-
-        resultSegmentPoint1.X = CSng(p1.X + mua * p21.X)
-        resultSegmentPoint1.Y = CSng(p1.Y + mua * p21.Y)
-        resultSegmentPoint1.Z = CSng(p1.Z + mua * p21.Z)
-        resultSegmentPoint2.X = CSng(p3.X + mub * p43.X)
-        resultSegmentPoint2.Y = CSng(p3.Y + mub * p43.Y)
-        resultSegmentPoint2.Z = CSng(p3.Z + mub * p43.Z)
-
-        Return True
-    End Function
-
-    Public Shared Function Get_Line_Intersection(ByVal p0_x As Double, ByVal p0_y As Double, ByVal p1_x As Double, ByVal p1_y As Double,
-    ByVal p2_x As Double, ByVal p2_y As Double, ByVal p3_x As Double, ByVal p3_y As Double, ByRef i_x As Double, ByRef i_y As Double, ByRef bIntersect As Boolean) As Boolean
-        Dim s1_x, s1_y, s2_x, s2_y As Double
-        s1_x = 0
-        s1_y = 0
-        s2_x = 0
-        s2_y = 0
-        s1_x = p1_x - p0_x
-        s1_y = p1_y - p0_y
-        s2_x = p3_x - p2_x
-        s2_y = p3_y - p2_y
-
-        Dim s, t As Double
-        s = 0
-        t = 0
-        s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y)
-        t = (s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y)
-        If Math.Abs(-s2_x * s1_y + s1_x * s2_y) > 0 Then
-            If (s >= 0 AndAlso s <= 1 AndAlso t >= 0 AndAlso t <= 1) Then
-                bIntersect = True
-                i_x = p0_x + (t * s1_x)
-                i_y = p0_y + (t * s1_y)
-            End If
-        End If
-    End Function
-
 
     'append an extension to a filename removing the existing extension if there is one
     Shared Function ChangeFileExt(ByVal filenameIn As String, ByVal extIn As String) As String
@@ -657,32 +440,25 @@ Public Class Utils
         End If
         ChangeFileExt &= "."
         ChangeFileExt &= extIn
-        'MessageBox.Show("ChangeFileExt - exit - ChangeFileExt <" & ChangeFileExt & "> i <" & i & ">")
     End Function
 
 
     '  Helper function - recursively search the given file name under the current directory. 
     '
     Public Shared Function SearchFile(ByVal path As String, ByVal fileName As String) As String
-
-        '  search this directory 
-        Dim fname As String
-        For Each fname In Directory.GetFiles(path, fileName) ', SearchOption.AllDirectories)
-            'The above overload searches recursively
-            Return path
-        Next
         '  recursively search child directories.  
-        Dim dname As String
-        For Each dname In Directory.GetDirectories(path)
-            If Not dname.Contains("Structural") Then
+        Dim directoryName As String
+        For Each directoryName In Directory.GetDirectories(path, "*", SearchOption.AllDirectories)
+            If Not directoryName.Contains("Structural") Then
                 Continue For
             End If
-            Dim filePath As String = SearchFile(dname, fileName)
-            If Not (filePath Is Nothing) Then
-                Return filePath
-            End If
-        Next
 
+            For Each revitRFAfileName As String In Directory.GetFiles(directoryName)
+                If (fileName.Equals(System.IO.Path.GetFileName(revitRFAfileName))) Then
+                    Return revitRFAfileName
+                End If
+            Next
+        Next
         Return Nothing
     End Function
     Public Shared Function TrimSpace(ByVal source As String) As String
@@ -709,4 +485,109 @@ Public Class Utils
         End Try
     End Function
 
+    Public Shared Function OnSegment(ByRef p As Double(), ByRef q As Double(), ByRef r As Double()) As Boolean
+        If q(0) <= Max(p(0), r(0)) AndAlso q(0) >= Min(p(0), r(0)) AndAlso q(1) <= Max(p(1), r(1)) AndAlso q(1) >= Min(p(1), r(1)) Then
+            Return True
+        End If
+        Return False
+    End Function
+    Public Shared Function Orientation(ByRef p As Double(), ByRef q As Double(), ByRef r As Double()) As Integer
+        Dim val As Double = (q(1) - p(1)) * (r(0) - q(0)) - (q(0) - p(0)) * (r(1) - q(1))
+        If IsApproxEqual(val, 0, 0.0001) Then
+            Return 0
+        End If
+        If val > 0 Then
+            Return 1
+        Else
+            Return 2
+        End If
+    End Function
+    Public Shared Function DoInterSect(ByRef p1 As Double(), ByRef q1 As Double(), ByRef p2 As Double(), ByRef q2 As Double()) As Boolean
+        'Find the four orientations needed for general and
+        'special cases
+        'http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+        Dim o1 As Integer = Orientation(p1, q1, p2)
+        Dim o2 As Integer = Orientation(p1, q1, q2)
+        Dim o3 As Integer = Orientation(p2, q2, p1)
+        Dim o4 As Integer = Orientation(p2, q2, q1)
+        'General case
+        If Not o1.Equals(o2) AndAlso Not o3.Equals(o4) Then
+            Return True
+        End If
+        'Special Cases
+        'p1, q1 and p2 are collinear and p2 lies on segment p1q1
+        If o1.Equals(0) AndAlso OnSegment(p1, p2, q1) Then
+            Return True
+        End If
+        'p1, q1 and q2 are collinear and q2 lies on segment p1q1
+        If o2.Equals(0) AndAlso OnSegment(p1, q2, q1) Then
+            Return True
+        End If
+        'p2, q2 and p1 are collinear and p1 lies on segment p2q2
+        If o3.Equals(0) AndAlso OnSegment(p2, p1, q2) Then
+            Return True
+        End If
+        ' p2, q2 and q1 are collinear and q1 lies on segment p2q2
+        If o4.Equals(0) AndAlso OnSegment(p2, q1, q2) Then
+            Return True
+        End If
+        Return False 'Doesn't fall in any of the above cases
+    End Function
+    Public Shared Function IsInsidePolygon(ByVal points As List(Of Double()), ByVal point As Double()) As Boolean
+        Dim n As Integer = points.Count
+        If n < 3 Then
+            Return False
+        End If
+        Dim extreme As Double() = New Double() {10000, point(1), 0}
+        Dim count As Integer = 0
+        Dim i As Integer = 0
+        Do
+            Dim j As Integer = ((i + 1) Mod n)
+            If DoInterSect(points.Item(i), points.Item(j), point, extreme) Then
+                If Orientation(points.Item(i), point, points.Item(j)) = 0 Then
+                    Return OnSegment(points.Item(i), point, points.Item(j))
+                End If
+                count = count + 1
+            End If
+            i = j
+        Loop While i <> 0
+        Return CType(count And 1, Boolean)
+    End Function
+    Public Shared Function DisplacementUnitLabel(ByVal description As String) As String
+        Dim dSectionDispFactor As Double = 1.0
+        If description.Contains("(m)") Then
+            Return "(m)"
+        ElseIf description.Contains("(mm)") Then
+            Return "(mm)"
+        ElseIf description.Contains("(ft)") Then
+            Return "(ft)"
+        ElseIf description.Contains("in") Then
+            Return "(in)"
+        ElseIf description.Contains("cm") Then
+            Return "(cm)"
+        End If
+        Return "(m)"
+    End Function
+
+    Public Shared Function SectionDescription2D(ByVal thickness As Double, ByVal unitDescription As String) As String
+        Return thickness.ToString() + unitDescription
+    End Function
+
+    Public Shared Function thinknessFrom2dProfile(ByVal profile As String) As Double
+        Dim profiles As String() = profile.Split(New Char() {"("c, ")"c})
+        Dim thinkness As Double = 0.0
+        If profiles.Length > 1 Then
+            Double.TryParse(profiles(0), thinkness)
+            Return thinkness
+        End If
+        Return 0.0
+    End Function
+
+    Public Shared Function DownloadExampleFile(ByVal fileName As String) As String
+    System.IO.Directory.CreateDirectory(Environment.CurrentDirectory)
+        Dim webClient As WebClient = New WebClient()
+        Dim path As String = Environment.CurrentDirectory & "\" & fileName
+        webClient.DownloadFile("https://samples.oasys-software.com/gsa/10.2/General/Env.gwb", path)
+        Return path
+    End Function
 End Class

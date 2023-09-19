@@ -1,4 +1,4 @@
-﻿Imports Interop.Gsa_10_0
+﻿Imports Interop.Gsa_10_2
 
 Module Module1
     Dim sv_gwa As String = "GR_VIEW.17	134218690	63	test	0	0	755	296	1	9	\
