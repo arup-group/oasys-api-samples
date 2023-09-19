@@ -8,4 +8,9 @@ __pycache__
 packages
 *.dll
 *.pdb
-*.xml
+*.png
+*.bak
+DawnCache
+GPUCache
+programs64
+
