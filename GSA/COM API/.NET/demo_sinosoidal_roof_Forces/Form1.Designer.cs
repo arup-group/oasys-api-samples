@@ -57,7 +57,7 @@
             this.txtFilePath.Name = "txtFilePath";
             this.txtFilePath.Size = new System.Drawing.Size(507, 20);
             this.txtFilePath.TabIndex = 1;
-            this.txtFilePath.Text = "C:\\Program Files\\Oasys\\GSA 8.7\\Samples\\Stair.gwb";
+            this.txtFilePath.Text = "c:/temp/Stair.gwb"; //file Stair.gwb can be downloadxsed from "https://samples.oasys-software.com/gsa/10.2/General/Stair.gwb"
             // 
             // btnBrowse
             // 
