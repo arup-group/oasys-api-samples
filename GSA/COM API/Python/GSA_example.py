@@ -13,7 +13,7 @@ gsa_obj = win32com.client.Dispatch("Gsa_10_2.ComAuto")
 
 print("Downloading sample stair model")
 sample_model = requests.get(
-    "https://samples.oasys-software.com/gsa/10.1/General/Stair.gwb",
+    "https://samples.oasys-software.com/gsa/10.2/General/Stair.gwb",
     allow_redirects=True)
 # saves sample_model in Temp folder
 open('c:\\Temp\\Stair.gwb', 'wb').write(sample_model.content)

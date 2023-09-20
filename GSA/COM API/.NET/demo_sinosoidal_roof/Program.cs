@@ -25,8 +25,8 @@ namespace demo_sinosoidal_roof
             int n2_previous = 0;
             string strEnt = "EL";
 
-            string filePath = Utils.DownloadExampleFile("Stair.gwb");
-            string SavefilePath = @"C:\UpdatedStair.gwb";
+            string filePath = Utils.DownloadExampleFile("Env.gwb","sinosoidal_roof.gwb");
+            string SavefilePath = @"C:\temp\updated_sinosoidal_roof.gwb";
             GsaComUtil m_gsaObj = new GsaComUtil();
 
             m_gsaObj.GsaOpenFile(ref filePath);
