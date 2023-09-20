@@ -59,10 +59,9 @@ namespace demo_sinosoidal_roof_Forces
             this.txtFilePath.Name = "txtFilePath";
             this.txtFilePath.Size = new System.Drawing.Size(507, 20);
             this.txtFilePath.TabIndex = 1;
-            string sample_file_url = "https://samples.oasys-software.com/gsa/10.2/General/Stair.gwb";
-            string save_path = "c:/temp/Stair.gwb";
+            const string save_path = "c:/temp/Stair.gwb";
             WebClient webClient = new WebClient();
-            webClient.DownloadFile(sample_file_url, save_path);
+            webClient.DownloadFile("https://samples.oasys-software.com/gsa/10.2/General/Stair.gwb", save_path);
             this.txtFilePath.Text = save_path;
             // 
             // btnBrowse
