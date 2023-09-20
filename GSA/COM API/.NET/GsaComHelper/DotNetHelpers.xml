@@ -81,14 +81,6 @@ DotNetHelpers
  <returns></returns>
  <remarks>No need to extract RevitID again when using this</remarks>
 </member>
-<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.ElemSid(System.Int32@)">
- <summary>
- gets revit id for the element record
- </summary>
- <param name="record"></param>
- <returns></returns>
- <remarks>No need to extract RevitID again when using this</remarks>
-</member>
 <member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.GridPlaneSid(System.Int32@)">
  <summary>
  gets revit id for the grid plane record
@@ -105,7 +97,7 @@ DotNetHelpers
  <returns></returns>
  <remarks>No need to extract RevitID again when using this</remarks>
 </member>
-<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.EntSid(System.String@,System.Int32@)">
+<member name="M:Oasys.Gsa.DotNetHelpers.GsaComUtil.EntSid(System.String,System.Int32)">
  <summary>
  gets revit id for a member or element
  </summary>

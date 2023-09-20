@@ -583,11 +583,12 @@ Public Class Utils
         Return 0.0
     End Function
 
-    Public Shared Function DownloadExampleFile(ByVal fileName As String) As String
-    System.IO.Directory.CreateDirectory(Environment.CurrentDirectory)
+    Public Shared Function DownloadExampleFile(ByVal file_name_to_be_download_from_general_folder As String, ByVal file_name_to_be_saved As String) As String
+        System.IO.Directory.CreateDirectory(Environment.CurrentDirectory)
         Dim webClient As WebClient = New WebClient()
-        Dim path As String = Environment.CurrentDirectory & "\" & fileName
-        webClient.DownloadFile("https://samples.oasys-software.com/gsa/10.2/General/Env.gwb", path)
+        Dim path As String = Environment.CurrentDirectory & "\" & file_name_to_be_saved
+        Dim uri As Uri = New Uri("https://samples.oasys-software.com/gsa/10.2/General/" & file_name_to_be_download_from_general_folder)
+        webClient.DownloadFile(uri, path)
         Return path
     End Function
 End Class
