@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2003
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Comclient_Output_Extract_Arr", "Comclient_Output_Extract_Arr\Comclient_Output_Extract_Arr.vcxproj", "{0A9F0CF1-896D-4F36-BB43-6E83FA444B2F}"
 EndProject
@@ -29,10 +29,12 @@ Global
 		{0A9F0CF1-896D-4F36-BB43-6E83FA444B2F}.Template|x64.Build.0 = Release|x64
 		{0A9F0CF1-896D-4F36-BB43-6E83FA444B2F}.Template|x86.ActiveCfg = Release|Win32
 		{0A9F0CF1-896D-4F36-BB43-6E83FA444B2F}.Template|x86.Build.0 = Release|Win32
-		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Debug|x64.ActiveCfg = Debug|Win32
+		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Debug|x64.ActiveCfg = Debug|x64
+		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Debug|x64.Build.0 = Debug|x64
 		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Debug|x86.ActiveCfg = Debug|Win32
 		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Debug|x86.Build.0 = Debug|Win32
-		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Release|x64.ActiveCfg = Release|Win32
+		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Release|x64.ActiveCfg = Release|x64
+		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Release|x64.Build.0 = Release|x64
 		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Release|x86.ActiveCfg = Release|Win32
 		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Release|x86.Build.0 = Release|Win32
 		{A97124FE-5C30-4CE9-ACB5-2FEBC850E444}.Template|x64.ActiveCfg = Template|Win32

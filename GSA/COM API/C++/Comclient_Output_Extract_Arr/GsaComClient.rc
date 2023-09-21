@@ -44,7 +44,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,73,104,50,16
     PUSHBUTTON      "Cancel",IDCANCEL,137,104,50,16
     EDITTEXT        IDC_EDIT_FILENAME,36,30,204,12,ES_AUTOHSCROLL
-    LTEXT           "Select the GSA model to open...",IDC_STATIC,38,12,112,8
+    LTEXT           "Select a GSA model to open...",IDC_STATIC,38,12,112,8
     LTEXT           "After analysis, the file & text report will be saved to:",IDC_STATIC,36,54,176,8
     PUSHBUTTON      "...",IDC_BUTTON_FILEOPEN,244,30,12,12
     LTEXT           "Static",IDC_STATIC_ANALYSEDFILENAME,36,69,204,10
