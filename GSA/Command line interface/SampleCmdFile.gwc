@@ -2,32 +2,41 @@
 // A GWC file is an ASCII file containing a number of commands. 
 // The commands are processed by GSA as a batch operation 
 // in the sequence in which they appear in the GWC file.
+// A LOG file is produced in the GWC file folder.
 //
 // Notes:
-// Text following "//" is ignored
-// Data file extensions GWB, GWA and CSV are valid
-// The SAVE command saves in the same format as last 
-//   saved or, if not saved this session, as read.
+// Text following "//" is ignored.
+// Data file extensions GWB, GWA and CSV are valid.
+// The SAVE command saves in the same format as last saved, or as read in format if not saved in this session.
+// Where a view name is required the following are valid:
+// the name of a saved view or view list
+// ALL_PGV      - all preferred Graphic Views
+// ALL_SGV      - all saved Graphic Views
+// ALL_POV      - all preferred Output Views
+// ALL_SOV      - all saved Output Views
+// ALL_LST      - all views in all View Lists
+// TAGGED_PGV   - selected preferred Graphic Views
+// TAGGED_SGV   - selected saved Graphic Views
+// TAGGED_POV   - selected preferred Output Views
+// TAGGED_SOV   - selected saved Output Views
+// TAGGED_LST   - all views in selected View Lists
+
 //
 // Sample GWC file: 
 //
-
 {
-OPEN("f:\stair.csv");		// open a GWA file in 'comma separated variable' format      
-// DELETE(RESULTS     );
-DELETE(RESULTS_AND_CASES);
-ANALYSE();
-SAVE();				// save "f:\stair.csv"
-SAVEAS("f:\stair.gwb" );
-DELETE(RESULTS_AND_CASES);
-SAVE();				// save "f:\stair.gwb"
-SAVEAS("f:\stair.csv" );
-CLOSE();
-EXIT();
+Open("c:\Views.gwb");					// open the GWB file     
+Delete(RESULTS     );				        // delete results but not analysis cases
+Delete(RESULTS_AND_CASES);				// delete results and analysis cases
+Analyse();						// analyse all unanalysed cases, or if none, do static analysis of all load cases
+Save();							// save file
+SaveAs("c:\Views.csv");					// save as 'comma separated' format text file
+SaveAs("c:\Views.gwa");					// save as 'tab separated' format text file
+PrintView("TAGGED_SGV");				// print a view (it's a saved Graphic View)
+SaveViewToFile("view list B", TXT);			// save Output Views to tab delimited TXT file
+							// this is a view list so all Output Views in this view list will be saved
+SaveViewToFile("view list A", PNG);			// save Graphic Views to PNG file
+							// this is a view list so all Graphic Views in this view list will be saved
+Close()
+Exit()
 }
-
-
-
-
-
-
