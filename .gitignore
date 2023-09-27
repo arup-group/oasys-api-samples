@@ -12,5 +12,5 @@ packages
 *.bak
 DawnCache
 GPUCache
-programs64
+x64
 
