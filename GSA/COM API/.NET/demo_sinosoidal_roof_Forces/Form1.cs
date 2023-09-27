@@ -70,28 +70,36 @@ namespace demo_sinosoidal_roof_Forces
                     int.TryParse(strElemenNo, out Highest);
                     iStart = Highest;
                 }
+
+                List<int> exist_element = new List<int>();
+                for (int i = iStart; i <= Highest; i++)
+                {
+                    if ((int)m_gsaObj.GsaObj().GwaCommand("EXIST,EL," + i.ToString()) != 0)
+                    {
+                        exist_element.Add(i);
+                    }
+                }
                 Flag eOutFlag = (chkInter.Checked) ? Flag.LCL_1D_AUTO_PTS : 0;
                 int iStat = m_gsaObj.GsaObj().Output_Init_Arr((int)eOutFlag, "default", strLoadcase, ResHeader.REF_DISP_EL1D, iResPos);
-               
                 if (iStat == 0)
                 {
-                    for (int i = iStart; i <= Highest; i++)
+                    foreach (int element_id in exist_element)
                     {
                         GsaResults[] gsResult = null;
-                        int val = (int)m_gsaObj.GsaObj().GwaCommand("EXIST,EL," + i.ToString());
-                        if (val != 0)
                         {
-                            iStat = m_gsaObj.GsaObj().Output_Extract_Arr(i, out gsResult, out nComponent);
-                            for (int j = 0; j < gsResult.Count(); j++)
+                            if (m_gsaObj.GsaObj().Output_Extract_Arr(element_id, out gsResult, out nComponent) == 0)
                             {
-                                List<string> strList = new List<string>();
-                                strList.Add(i.ToString());
-                                strList.Add((j + 1).ToString());
-                                for (int k = 0; k < nComponent; k++)
+                                for (int j = 0; j < gsResult.Count(); j++)
                                 {
-                                    strList.Add(gsResult[j].dynaResults[k].ToString());
+                                    List<string> strList = new List<string>();
+                                    strList.Add(element_id.ToString());
+                                    strList.Add((j + 1).ToString());
+                                    for (int k = 0; k < nComponent; k++)
+                                    {
+                                        strList.Add(gsResult[j].dynaResults[k].ToString());
+                                    }
+                                    table.Rows.Add(strList.ToArray());
                                 }
-                                table.Rows.Add(strList.ToArray());
                             }
                         }
                     }

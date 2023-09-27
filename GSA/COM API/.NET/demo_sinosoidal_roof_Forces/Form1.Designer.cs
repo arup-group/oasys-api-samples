@@ -60,7 +60,7 @@ namespace demo_sinosoidal_roof_Forces
             this.txtFilePath.Name = "txtFilePath";
             this.txtFilePath.Size = new System.Drawing.Size(507, 20);
             this.txtFilePath.TabIndex = 1;
-            this.txtFilePath.Text = Utils.DownloadExampleFile("Stair.gwb", "sinosoidal_roof_forces.gwb");
+            this.txtFilePath.Text = Utils.DownloadExampleFile("Env.gwb", "sinosoidal_roof_forces.gwb");
             // 
             // btnBrowse
             // 
