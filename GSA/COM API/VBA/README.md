@@ -12,3 +12,7 @@ This example demonstrates the use of the following functions
 - Extract output parameter of element at various intermediate locations ugin `Output_Extract(...)`
 - Get the position along a 1D element as a proportion of the element length for specified position number using `Output_1DElemPos(...)`
 - Close GSA COM instance using `Close(...)`
+
+To run the example:
+1. copy the gwb files in this folder to c:\ComSample folder
+2. open the Excel file and run the examples as explained at each of the sheets
