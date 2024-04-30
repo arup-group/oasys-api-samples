@@ -1,8 +1,4 @@
 ---
-# For general setup help, see
-# https://github.com/arup-group/oasys-core/blob/main/docs/windows_development_environment.md
-# and for the pre-commit framework in particular, see
-# https://github.com/arup-group/oasys-core/blob/main/docs/windows_development_environment.md#6-pre-commit-and-git-template
 repos:
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
