@@ -7,7 +7,7 @@ from Oasys.AdSec.StandardMaterials import Steel
 from Oasys.AdSec import ISection
 from Oasys.AdSec import IAdSec,ILoad
 from Oasys.AdSec.DesignCode import EN1992
-import openpyxl as op
+import openpyxl as op#OPen source library that can be used for reading and writing into the excel files
 
 #Reading Values from the excel file
 
@@ -43,5 +43,7 @@ try:
     workbook.save('loads.xlsx')
 except FileNotFoundError:
     print("file not found")
+except Exception as e:
+    print("Error occured: ",e);
     
 
