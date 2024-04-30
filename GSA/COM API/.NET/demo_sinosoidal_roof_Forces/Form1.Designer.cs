@@ -200,4 +200,3 @@ namespace demo_sinosoidal_roof_Forces
         private System.Windows.Forms.CheckBox chkInter;
     }
 }
-
