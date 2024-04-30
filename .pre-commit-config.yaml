@@ -1,0 +1,90 @@
+---
+# For general setup help, see
+# https://github.com/arup-group/oasys-core/blob/main/docs/windows_development_environment.md
+# and for the pre-commit framework in particular, see
+# https://github.com/arup-group/oasys-core/blob/main/docs/windows_development_environment.md#6-pre-commit-and-git-template
+repos:
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v16.0.6
+  hooks:
+  - id: clang-format
+        # Armadillo files have an unsupported BOM
+    exclude: |
+      (?x)(
+          ^externals/.*|
+          packages/.*|
+          node_modules/.*|
+          \.json$|
+          \.cs$|
+          \.js$
+      )
+
+- repo: https://github.com/arup-group/oasys-yamlfmt
+  rev: 0.3.1
+  hooks:
+  - id: yamlfmt
+    args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '119']
+    exclude: |
+      (?x)(
+        \.clang-format|^externals/.*
+      )
+- repo: https://github.com/arup-group/oasys-pre-commit-hooks
+  rev: 2023.10.0
+  hooks:
+  - id: lxml-lint
+    exclude: |
+      (?x)(
+          ^externals/.*
+      )
+  - id: codecov-config-validator
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+    # reject files with conflict markers in them
+  - id: check-merge-conflict
+  - id: check-yaml
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.0.289
+  hooks:
+  - id: ruff
+- repo: https://github.com/psf/black
+  rev: 23.9.1
+  hooks:
+  - id: black
+    exclude: |
+      (?x)(
+          ^externals/.*|
+          PythonCodeSnippets/.*
+      )
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.6.26
+  hooks:
+  - id: actionlint
+- repo: local
+  hooks:
+  - id: dotnet-tool-restore
+    name: Install .NET tools
+    entry: dotnet tool restore
+    language: system
+    types:
+    - c#
+    pass_filenames: false
+    stages:
+    - commit
+    - push
+    - post-checkout
+    - post-rewrite
+    description: Install the .NET tools listed at .config/dotnet-tools.json.
+  - id: csharpier
+    name: Run CSharpier on C# files
+    entry: dotnet tool run dotnet-csharpier
+    language: system
+    types:
+    - c#
+    description: CSharpier is an opinionated C# formatter inspired by Prettier.
+  - id: prevent-vcxproj-user
+    name: reject *.vcxproj.user and user.props
+    entry: .vcxproj.user and user.props files should not be committed
+    language: fail
+    files: .*(\.vcxproj\.user|user\.props)
+    exclude: externals/freetype2/freetype-2.6.5/builds/windows/vc2010/freetype.user.props
