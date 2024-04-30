@@ -1,4 +1,4 @@
-﻿using GsaAPI;
+using GsaAPI;
 using System.IO;
 
 namespace GsaConsoleApplication

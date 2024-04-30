@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Oasys.AdSec;
 using Oasys.AdSec.IO.Serialization;
 using Oasys.Collections;

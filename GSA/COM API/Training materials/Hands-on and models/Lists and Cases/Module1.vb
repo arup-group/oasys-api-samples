@@ -1,4 +1,4 @@
-﻿Imports Interop.gsa_8_7
+Imports Interop.gsa_8_7
 Imports System.Diagnostics
 
 Module Module1

@@ -1,4 +1,4 @@
-﻿Imports Interop
+Imports Interop
 
 Module Module1
 

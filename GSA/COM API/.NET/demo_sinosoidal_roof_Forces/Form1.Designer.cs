@@ -1,4 +1,4 @@
-﻿using Oasys.Gsa.DotNetHelpers;
+using Oasys.Gsa.DotNetHelpers;
 using System.Net;
 
 namespace demo_sinosoidal_roof_Forces

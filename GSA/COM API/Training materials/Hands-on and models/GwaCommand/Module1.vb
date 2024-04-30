@@ -1,4 +1,4 @@
-﻿Imports Interop.gsa_8_7
+Imports Interop.gsa_8_7
 
 Module Module1
 

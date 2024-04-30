@@ -1,4 +1,4 @@
-﻿Imports System.IO
+Imports System.IO
 Imports Interop.Gsa_10_2
 
 Module Module1

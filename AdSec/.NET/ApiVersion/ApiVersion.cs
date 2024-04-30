@@ -1,4 +1,4 @@
-﻿using Oasys.AdSec;
+using Oasys.AdSec;
 
 namespace ApiVersion
 {
