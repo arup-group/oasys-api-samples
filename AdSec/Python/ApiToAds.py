@@ -16,8 +16,8 @@ from OasysUnits.Units import ForceUnit, LengthUnit
 def api_to_ads():
     # Create API section
     circle_profile = ICircleProfile.Create(Length(float(1000), LengthUnit.Millimeter))
-    C30 = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.PD6687.Edition_2010.C30_37
-    section = ISection.Create(circle_profile, C30)
+    c30 = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.PD6687.Edition_2010.C30_37
+    section = ISection.Create(circle_profile, c30)
 
     # Use JsonConverter's SectionToJson method to obtain JSON string
     converter = JsonConverter(EN1992.Part1_1.Edition_2004.NationalAnnex.GB.PD6687.Edition_2010)
