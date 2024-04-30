@@ -6,8 +6,8 @@
 #  - saves the analysed model with a new file name
 #  - closes GSA
 
-import win32com.client  # https://pypi.org/project/pywin32/
 import requests  # https://pypi.org/project/requests/    HTTP library
+import win32com.client  # https://pypi.org/project/pywin32/
 
 gsa_obj = win32com.client.Dispatch("Gsa_10_2.ComAuto")
 

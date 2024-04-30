@@ -1,10 +1,8 @@
 import os
-import oasys.adsec
-import pathlib
+from pathlib import Path
 
 # Import modules from namespace
 from Oasys.AdSec.IO.Serialization import JsonParser
-from pathlib import Path
 
 # This example shows how to convert a .ads file into API objects.
 #
@@ -23,7 +21,7 @@ def ads_to_api():
     )
 
     # Read the .ads file
-    with open(ads_file_path, mode="r") as file:
+    with open(ads_file_path) as file:
         json = file.read()
 
     # Use JsonParser's Deserialize method to convert from JSON to API objects

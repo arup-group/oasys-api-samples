@@ -1,14 +1,13 @@
 # Load the AdSec API
-import oasys.adsec
 
 # Import modules from namespace
-from Oasys.AdSec import IAdSec, ISection, ILoad
+from Oasys.AdSec import IAdSec, ILoad, ISection
 from Oasys.AdSec.DesignCode import EN1992
+from Oasys.AdSec.Reinforcement import IBarBundle, ICover
+from Oasys.AdSec.Reinforcement.Groups import ILinkGroup, ITemplateGroup
+from Oasys.AdSec.Reinforcement.Layers import ILayerByBarCount
 from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
 from Oasys.Profiles import IRectangleProfile
-from Oasys.AdSec.Reinforcement import ICover, IBarBundle
-from Oasys.AdSec.Reinforcement.Groups import ITemplateGroup, ILinkGroup
-from Oasys.AdSec.Reinforcement.Layers import ILayerByBarCount
 from OasysUnits import Force, Length, Moment
 from OasysUnits.Units import ForceUnit, LengthUnit, MomentUnit
 

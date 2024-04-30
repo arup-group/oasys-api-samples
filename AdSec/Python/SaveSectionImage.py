@@ -1,19 +1,18 @@
 # Load the AdSec API
-import oasys.adsec
 
 # Import modules from namespace
 from Oasys.AdSec import IAdSec, ISection, ISubComponent
 from Oasys.AdSec.DesignCode import IS456
-from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
-from Oasys.Profiles import IRectangleProfile, IPoint
-from Oasys.AdSec.Reinforcement import ICover, IBarBundle
+from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
+from Oasys.AdSec.Reinforcement import IBarBundle, ICover
 from Oasys.AdSec.Reinforcement.Groups import ILinkGroup, IPerimeterGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarPitch
-from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
+from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
+from Oasys.Profiles import IPoint, IRectangleProfile
 from OasysUnits import Length
 from OasysUnits.Units import LengthUnit
-from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
+from svglib.svglib import svg2rlg
 
 # This example shows how to save the XML to a file to create an SVG file.
 # It also shows how you can use a third party library to convert the SVG into a PNG file.

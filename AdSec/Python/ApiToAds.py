@@ -1,12 +1,11 @@
-import oasys.adsec
-from Oasys.AdSec import ISection, ILoad
+from Oasys.AdSec import ILoad, ISection
 from Oasys.AdSec.DesignCode import EN1992
-from Oasys.Collections import IList
-from Oasys.AdSec.StandardMaterials import Concrete
-from Oasys.Profiles import ICircleProfile
 from Oasys.AdSec.IO.Serialization import JsonConverter
-from OasysUnits import Length, Force, Moment
-from OasysUnits.Units import LengthUnit, ForceUnit, MomentUnit
+from Oasys.AdSec.StandardMaterials import Concrete
+from Oasys.Collections import IList
+from Oasys.Profiles import ICircleProfile
+from OasysUnits import Force, Length, Moment
+from OasysUnits.Units import ForceUnit, LengthUnit
 
 # This example shows how to convert an API object into .ads file
 #
