@@ -45,25 +45,25 @@ namespace demo_sinosoidal_roof_Forces
             this.chkInter = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.grdResult)).BeginInit();
             this.SuspendLayout();
-            // 
+            //
             // grdResult
-            // 
+            //
             this.grdResult.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.grdResult.Location = new System.Drawing.Point(41, 241);
             this.grdResult.Name = "grdResult";
             this.grdResult.Size = new System.Drawing.Size(703, 191);
             this.grdResult.TabIndex = 0;
-            // 
+            //
             // txtFilePath
-            // 
+            //
             this.txtFilePath.Location = new System.Drawing.Point(161, 21);
             this.txtFilePath.Name = "txtFilePath";
             this.txtFilePath.Size = new System.Drawing.Size(507, 20);
             this.txtFilePath.TabIndex = 1;
             this.txtFilePath.Text = Utils.DownloadExampleFile("Env.gwb", "sinosoidal_roof_forces.gwb");
-            // 
+            //
             // btnBrowse
-            // 
+            //
             this.btnBrowse.Location = new System.Drawing.Point(674, 20);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(28, 23);
@@ -71,18 +71,18 @@ namespace demo_sinosoidal_roof_Forces
             this.btnBrowse.Text = "...";
             this.btnBrowse.UseVisualStyleBackColor = true;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
-            // 
+            //
             // label1
-            // 
+            //
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(39, 25);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(73, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "GSA File Path";
-            // 
+            //
             // btnResult
-            // 
+            //
             this.btnResult.Location = new System.Drawing.Point(310, 212);
             this.btnResult.Name = "btnResult";
             this.btnResult.Size = new System.Drawing.Size(87, 23);
@@ -90,63 +90,63 @@ namespace demo_sinosoidal_roof_Forces
             this.btnResult.Text = "Get Result";
             this.btnResult.UseVisualStyleBackColor = true;
             this.btnResult.Click += new System.EventHandler(this.btnResult_Click);
-            // 
+            //
             // txtElementNumber
-            // 
+            //
             this.txtElementNumber.Location = new System.Drawing.Point(161, 65);
             this.txtElementNumber.Name = "txtElementNumber";
             this.txtElementNumber.Size = new System.Drawing.Size(52, 20);
             this.txtElementNumber.TabIndex = 5;
             this.txtElementNumber.Text = "All";
             this.txtElementNumber.TextChanged += new System.EventHandler(this.txtElementNumber_TextChanged);
-            // 
+            //
             // label2
-            // 
+            //
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(39, 69);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(85, 13);
             this.label2.TabIndex = 6;
             this.label2.Text = "Element Number";
-            // 
+            //
             // label3
-            // 
+            //
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(39, 113);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(58, 13);
             this.label3.TabIndex = 8;
             this.label3.Text = "Load Case";
-            // 
+            //
             // txtLoadCase
-            // 
+            //
             this.txtLoadCase.Location = new System.Drawing.Point(161, 109);
             this.txtLoadCase.Name = "txtLoadCase";
             this.txtLoadCase.Size = new System.Drawing.Size(52, 20);
             this.txtLoadCase.TabIndex = 7;
             this.txtLoadCase.Text = "A1";
             this.txtLoadCase.TextChanged += new System.EventHandler(this.txtLoadCase_TextChanged);
-            // 
+            //
             // label4
-            // 
+            //
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(39, 157);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(106, 13);
             this.label4.TabIndex = 10;
             this.label4.Text = "No of Result Position";
-            // 
+            //
             // txtResultPos
-            // 
+            //
             this.txtResultPos.Location = new System.Drawing.Point(161, 153);
             this.txtResultPos.Name = "txtResultPos";
             this.txtResultPos.Size = new System.Drawing.Size(52, 20);
             this.txtResultPos.TabIndex = 9;
             this.txtResultPos.Text = "2";
             this.txtResultPos.TextChanged += new System.EventHandler(this.txtResultPos_TextChanged);
-            // 
+            //
             // chkInter
-            // 
+            //
             this.chkInter.AutoSize = true;
             this.chkInter.Checked = true;
             this.chkInter.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -156,9 +156,9 @@ namespace demo_sinosoidal_roof_Forces
             this.chkInter.TabIndex = 11;
             this.chkInter.Text = "Include intersecting points";
             this.chkInter.UseVisualStyleBackColor = true;
-            // 
+            //
             // Form1
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(771, 445);

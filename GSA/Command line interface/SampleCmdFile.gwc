@@ -1,6 +1,6 @@
-// GSA accepts a GWC filename as a command line argument. 
-// A GWC file is an ASCII file containing a number of commands. 
-// The commands are processed by GSA as a batch operation 
+// GSA accepts a GWC filename as a command line argument.
+// A GWC file is an ASCII file containing a number of commands.
+// The commands are processed by GSA as a batch operation
 // in the sequence in which they appear in the GWC file.
 // A LOG file is produced in the GWC file folder.
 //
@@ -22,10 +22,10 @@
 // TAGGED_LST   - all views in selected View Lists
 
 //
-// Sample GWC file: 
+// Sample GWC file:
 //
 {
-Open("c:\Views.gwb");					// open the GWB file     
+Open("c:\Views.gwb");					// open the GWB file
 Delete(RESULTS     );				        // delete results but not analysis cases
 Delete(RESULTS_AND_CASES);				// delete results and analysis cases
 Analyse();						// analyse all unanalysed cases, or if none, do static analysis of all load cases

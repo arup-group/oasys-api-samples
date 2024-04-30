@@ -418,7 +418,7 @@ Public Class Utils
     End Sub
 
     '/ <summary>
-    '/ Returns true for a precision 
+    '/ Returns true for a precision
     '/ </summary>
     '/ <param name="s"></param>
     '/ <param name="t"></param>
@@ -443,10 +443,10 @@ Public Class Utils
     End Function
 
 
-    '  Helper function - recursively search the given file name under the current directory. 
+    '  Helper function - recursively search the given file name under the current directory.
     '
     Public Shared Function SearchFile(ByVal path As String, ByVal fileName As String) As String
-        '  recursively search child directories.  
+        '  recursively search child directories.
         Dim directoryName As String
         For Each directoryName In Directory.GetDirectories(path, "*", SearchOption.AllDirectories)
             If Not directoryName.Contains("Structural") Then

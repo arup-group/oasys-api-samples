@@ -37,7 +37,7 @@
 
         gsaObj.Delete("RESULTS_AND_CASES")
 
-        'LOAD_BEAM_POINT.2 | name | list | case | axis | proj | dir | pos |  value 
+        'LOAD_BEAM_POINT.2 | name | list | case | axis | proj | dir | pos |  value
         gsaObj.GwaCommand("LOAD_BEAM_POINT.2,load added by COM,2,4,GLOBAL,NO,Z,-.25,-12")
         gsaObj.Analyse()
         gsaObj.SaveAs("c:\GSA_training\Env_loaded.gwb")
@@ -45,7 +45,7 @@
 
         gsaObj = Nothing
 
-'-------------------------------		
+'-------------------------------
 
 ' GwaCommand
         ' element 1
@@ -78,7 +78,7 @@
             Console.WriteLine("Failed to create element {0}", elRef)
         End If
 
-		' the following shows function reuse 
+		' the following shows function reuse
         ret = CreateBeam(elRef, 1, n1, n2, gsa)
         If True = ret Then
             elRef += 1
@@ -92,7 +92,7 @@
             elRef += 1
         End If
 
-		
+
 'Function CreateBeam(ByVal index As Integer, ByVal prop As Integer, ByVal topo0 As Integer,
 '                    ByVal topo1 As Integer, ByRef gsaObject As ComAuto) As Boolean
 '    Dim gwaRecord As String = String.Format("EL,{0},,NO_RGB,BEAM,{1},1, {2},{2}", index, prop, topo0, topo1)
@@ -139,4 +139,4 @@
             Console.WriteLine("Result for node " & ent & " = " & result)
         Next
 
-		
+
