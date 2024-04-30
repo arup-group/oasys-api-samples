@@ -21,8 +21,9 @@ from reportlab.graphics import renderPM
 # You might like to run the 'ApiVersion' example first, just to check
 # that the API is installed correctly.
 
+
 def save_section_image():
-    # We're going to create a rectangular section with a sub-component.  
+    # We're going to create a rectangular section with a sub-component.
 
     # Create the rectangular section
     depth = Length(float(500), LengthUnit.Millimeter)
@@ -35,7 +36,7 @@ def save_section_image():
     section.Cover = ICover.Create(Length(float(30), LengthUnit.Millimeter))
 
     # Assign reinforcements to the main section
-    reinforcement_material = Reinforcement.Steel.IS456.Edition_2000.S415;
+    reinforcement_material = Reinforcement.Steel.IS456.Edition_2000.S415
     bar16mm = IBarBundle.Create(reinforcement_material, Length(float(16), LengthUnit.Millimeter))
     layer_pitch_125mm = ILayerByBarPitch.Create(bar16mm, Length(float(125), LengthUnit.Millimeter))
     main_reinforcement = IPerimeterGroup.Create()
@@ -82,5 +83,6 @@ def save_section_image():
     drawing = svg2rlg("examplepy.svg")
     renderPM.drawToFile(drawing, "examplepy.png", fmt="PNG")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     save_section_image()

@@ -79,5 +79,5 @@ def strength_analysis():
     print("The maximum crack width is: " + str(crackWidth) + " mm")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     strength_analysis()
