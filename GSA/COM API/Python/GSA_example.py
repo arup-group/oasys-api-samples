@@ -5,6 +5,7 @@
 #  - analyses all analysis tasks
 #  - saves the analysed model with a new file name
 #  - closes GSA
+from pathlib import Path
 
 import requests  # https://pypi.org/project/requests/    HTTP library
 import win32com.client  # https://pypi.org/project/pywin32/
@@ -17,7 +18,7 @@ sample_model = requests.get(
     "https://samples.oasys-software.com/gsa/10.2/General/Stair.gwb", allow_redirects=True, verify=False
 )
 # saves sample_model in Temp folder
-open("c:\\Temp\\Stair.gwb", "wb").write(sample_model.content)
+Path("c:\\Temp\\Stair.gwb").write_bytes(sample_model.content)
 
 print("Opening sample stair model")
 gsa_obj.Open("c:\\Temp\\Stair.gwb")

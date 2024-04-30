@@ -1,4 +1,5 @@
 # Load the AdSec API
+from pathlib import Path
 
 # Import modules from namespace
 from Oasys.AdSec import IAdSec, ISection, ISubComponent
@@ -75,7 +76,7 @@ def save_section_image():
     svg_str = SectionImageBuilder(flattened_section).Svg()
 
     # This string can be written into SVG format file
-    with open("examplepy.svg", "w") as file:
+    with Path("examplepy.svg").open(mode="w") as file:
         file.write(svg_str)
 
     # This string can be converted into PNG format file with a third party library like https://pypi.org/project/svglib

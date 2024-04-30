@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from Oasys.AdSec import ILoad, ISection
 from Oasys.AdSec.DesignCode import EN1992
 from Oasys.AdSec.IO.Serialization import JsonConverter
@@ -24,7 +26,7 @@ def api_to_ads():
     json = converter.SectionToJson(section)
 
     # Save this JSON string into a file
-    with open("adsec_section.ads", mode="w", encoding="utf-8") as file:
+    with Path("adsec_section.ads").open(mode="w", encoding="utf-8") as file:
         file.write(json)
 
     # To save a section with load (or deformation)
@@ -34,7 +36,7 @@ def api_to_ads():
     load_list.Add(load_one)
     load_list.Add(load_two)
     json_with_loads = converter.SectionToJson(section, load_list)
-    with open("adsec_section_with_loads.ads", mode="w", encoding="utf-8") as file:
+    with Path("adsec_section_with_loads.ads").open(mode="w", encoding="utf-8") as file:
         file.write(json_with_loads)
 
 
