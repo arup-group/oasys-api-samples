@@ -4,31 +4,31 @@
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "include 'stdafx.h' before including this file for PCH"
+#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"		// main symbols
-
+#include "resource.h" // main symbols
 
 // CGsaComClientApp:
 // See GsaComClient.cpp for the implementation of this class
 //
 
-class CGsaComClientApp : public CWinApp
-{
+class CGsaComClientApp : public CWinApp {
 public:
-	CGsaComClientApp();
-	void invokeGsa(CString filename, CString analysed_filename,CString analysed_filename_report);
+  CGsaComClientApp();
+  void invokeGsa(CString filename, CString analysed_filename,
+                 CString analysed_filename_report);
 
-// Overrides
-	public:
-	virtual BOOL InitInstance();
+  // Overrides
+public:
+  virtual BOOL InitInstance();
+
 private:
-	void WriteString(CFile& cfile,CString str);
+  void WriteString(CFile &cfile, CString str);
 
-// Implementation
+  // Implementation
 
-	DECLARE_MESSAGE_MAP()
+  DECLARE_MESSAGE_MAP()
 };
 
 extern CGsaComClientApp theApp;

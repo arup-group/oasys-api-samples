@@ -28,16 +28,35 @@ namespace SampleProgram
         {
             // Create a circular section
             var profile = ICircleProfile.Create(Length.FromMillimeters(500));
-            IConcrete sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.C40_50;
+            IConcrete sectionMaterial = Concrete
+                .EN1992
+                .Part1_1
+                .Edition_2004
+                .NationalAnnex
+                .GB
+                .Edition_2014
+                .C40_50;
             var section = ISection.Create(profile, sectionMaterial);
 
-            IReinforcement reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.S500B;
-            ILayer layer = ILayerByBarCount.Create(4, IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(32)));
+            IReinforcement reinforcementMaterial = Reinforcement
+                .Steel
+                .EN1992
+                .Part1_1
+                .Edition_2004
+                .NationalAnnex
+                .GB
+                .Edition_2014
+                .S500B;
+            ILayer layer = ILayerByBarCount.Create(
+                4,
+                IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(32))
+            );
             // Set some reinforcement
             IGroup group = ILineGroup.Create(
                 IPoint.Create(Length.Zero, Length.Zero),
                 IPoint.Create(Length.FromMillimeters(150), Length.FromMillimeters(150)),
-                layer);
+                layer
+            );
 
             section.ReinforcementGroups.Add(group);
 
