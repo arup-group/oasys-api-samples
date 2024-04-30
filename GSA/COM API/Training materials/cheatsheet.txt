@@ -138,5 +138,3 @@
             Dim result As Double = gsa.Output_Extract(ent, 0)
             Console.WriteLine("Result for node " & ent & " = " & result)
         Next
-
-
