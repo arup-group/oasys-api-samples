@@ -18,7 +18,8 @@ namespace SampleProgramTestsUsingMocking
             // GIVEN a serviceability result
             Length length = Length.FromMillimeters(0.5);
             Mock<ICrack> mockCrack = new Mock<ICrack>();
-            Mock<IServiceabilityResult> mockServiceabilityResult = new Mock<IServiceabilityResult>();
+            Mock<IServiceabilityResult> mockServiceabilityResult =
+                new Mock<IServiceabilityResult>();
             mockServiceabilityResult.Setup(_ => _.MaximumWidthCrack).Returns(mockCrack.Object);
             mockCrack.Setup(_ => _.Width).Returns(length);
 

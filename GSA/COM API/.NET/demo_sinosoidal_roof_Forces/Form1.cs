@@ -19,14 +19,13 @@ namespace demo_sinosoidal_roof_Forces
         private int iResPos = 2;
         private List<GsaResults[]> EleArrayList = new List<GsaResults[]>();
         DataTable table = new DataTable();
-       
-  
+
         public Form1()
         {
             InitializeComponent();
             table.Columns.Add("Element", typeof(string));
             table.Columns.Add("Position", typeof(string));
-            table.Columns.Add("FX(kN)", typeof(string ));
+            table.Columns.Add("FX(kN)", typeof(string));
             table.Columns.Add("FY(kN)", typeof(string));
             table.Columns.Add("FZ(kN)", typeof(string));
             table.Columns.Add("FRC(kN)", typeof(string));
@@ -40,21 +39,23 @@ namespace demo_sinosoidal_roof_Forces
         {
             GetResult();
         }
+
         enum Flag
-	    {
-		    LCL_2D_BOTTOM		      = 0x00000001,	// output 2D stresses at bottom layer
-		    LCL_2D_MIDDLE		      = 0x00000002,	// output 2D stresses at middle layer
-		    LCL_2D_TOP			      = 0x00000004,	// output 2D stresses at top layer
-		    LCL_2D_BENDING		      = 0x00000008,	// output 2D stresses at bending layer
-		    LCL_2D_AVGE			      = 0x00000010,	// average 2D element stresses at nodes
-		    LCL_1D_AUTO_PTS		      = 0x00000020,	// calculate 1D results at interesting points
-		    LCL_INFINITY		      = 0x00000040,	// report infinity and NaN as that, else as 0
-		    LCL_1D_WALL_RES_SECONDARY = 0x00000080,	// output secondary stick of wall element 1D results
-	    };
+        {
+            LCL_2D_BOTTOM = 0x00000001, // output 2D stresses at bottom layer
+            LCL_2D_MIDDLE = 0x00000002, // output 2D stresses at middle layer
+            LCL_2D_TOP = 0x00000004, // output 2D stresses at top layer
+            LCL_2D_BENDING = 0x00000008, // output 2D stresses at bending layer
+            LCL_2D_AVGE = 0x00000010, // average 2D element stresses at nodes
+            LCL_1D_AUTO_PTS = 0x00000020, // calculate 1D results at interesting points
+            LCL_INFINITY = 0x00000040, // report infinity and NaN as that, else as 0
+            LCL_1D_WALL_RES_SECONDARY = 0x00000080, // output secondary stick of wall element 1D results
+        };
+
         public void GetResult()
         {
             string filePath = txtFilePath.Text.ToString();
-            int nComponent =0;
+            int nComponent = 0;
             int Highest = 0;
             m_gsaObj = new GsaComUtil();
             m_gsaObj.GsaOpenFile(ref filePath);
@@ -80,14 +81,27 @@ namespace demo_sinosoidal_roof_Forces
                     }
                 }
                 Flag eOutFlag = (chkInter.Checked) ? Flag.LCL_1D_AUTO_PTS : 0;
-                int iStat = m_gsaObj.GsaObj().Output_Init_Arr((int)eOutFlag, "default", strLoadcase, ResHeader.REF_DISP_EL1D, iResPos);
+                int iStat = m_gsaObj
+                    .GsaObj()
+                    .Output_Init_Arr(
+                        (int)eOutFlag,
+                        "default",
+                        strLoadcase,
+                        ResHeader.REF_DISP_EL1D,
+                        iResPos
+                    );
                 if (iStat == 0)
                 {
                     foreach (int element_id in exist_element)
                     {
                         GsaResults[] gsResult = null;
                         {
-                            if (m_gsaObj.GsaObj().Output_Extract_Arr(element_id, out gsResult, out nComponent) == 0)
+                            if (
+                                m_gsaObj
+                                    .GsaObj()
+                                    .Output_Extract_Arr(element_id, out gsResult, out nComponent)
+                                == 0
+                            )
                             {
                                 for (int j = 0; j < gsResult.Count(); j++)
                                 {
@@ -125,8 +139,6 @@ namespace demo_sinosoidal_roof_Forces
             {
                 strLoadcase = "";
             }
-
-          
         }
 
         private void txtElementNumber_TextChanged(object sender, EventArgs e)
@@ -150,7 +162,6 @@ namespace demo_sinosoidal_roof_Forces
                         strElemenNo = "";
                     }
                 }
-                
             }
         }
 
@@ -178,7 +189,6 @@ namespace demo_sinosoidal_roof_Forces
                 string file = flgOpen.FileName;
                 txtFilePath.Text = file;
             }
-
         }
     }
 }
