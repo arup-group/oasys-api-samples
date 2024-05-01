@@ -1,4 +1,4 @@
-﻿Imports System.IO
+Imports System.IO
 Imports Interop.Gsa_10_2
 
 Module Module1
@@ -47,7 +47,7 @@ Module Module1
         ' Create a new saved view that will display a contour
         Dim viewRef As Integer = gsa.CreateNewView("contour")
 
-        ' Now "apply" contour_template to this view and set 
+        ' Now "apply" contour_template to this view and set
         ' the result component to nodal displacement, z
         gsa.SetViewContour(viewRef, 12001003, contour_template)
 
@@ -56,7 +56,7 @@ Module Module1
 
         viewRef = gsa.CreateNewView("diag")
 
-        ' Rescale and 
+        ' Rescale and
         gsa.RescaleViewData(viewRef)
 
         gsa.UpdateViews()

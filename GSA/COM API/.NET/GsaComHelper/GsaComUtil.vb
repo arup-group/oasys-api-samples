@@ -591,7 +591,7 @@ Public Class GsaComUtil
     End Function
     Public Sub AssignUnitsCF()
 
-        'Revit store length in feet i.e in Impherial and rest other in SI units 
+        'Revit store length in feet i.e in Impherial and rest other in SI units
         Dim commandObj As Object = m_GSAObject.GwaCommand("GET,UNIT_DATA, LENGTH")
         If commandObj Is Nothing Then
             Exit Sub
@@ -636,14 +636,14 @@ Public Class GsaComUtil
         sGwaCommand += "," & sName                  'name
         sGwaCommand += "," + type.ToString()        'type [GENERAL :: general grid plane] or [STOREY	:: storey]
         sGwaCommand += "," + iAxis.ToString()       'axis
-        sGwaCommand += "," + dElev.ToString()       'elevation 
-        sGwaCommand += "," + dTol.ToString()        'above tolerance 
-        sGwaCommand += "," + dTol.ToString()        'below tolerance 
+        sGwaCommand += "," + dElev.ToString()       'elevation
+        sGwaCommand += "," + dTol.ToString()        'above tolerance
+        sGwaCommand += "," + dTol.ToString()        'below tolerance
         m_GSAObject.GwaCommand(sGwaCommand)
 
         Return iGrid
     End Function
-    
+
     Public Function GridPlane(ByVal iNum As Integer, ByRef sName As String, ByRef uid As String, ByRef dElev As Double) As Boolean
         Dim type As GridPlaneType = GridPlaneType.STOREY
         Dim iAxis As Integer = 0
@@ -1256,7 +1256,7 @@ Public Class GsaComUtil
         'off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure@End
         'MEMB0.8 | num | name | colour | type (1D) | prop | group | topology | node | angle | @end
         'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
-        'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
+        'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end
         'height | load_ref | stud_layout | off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure @End
         'MEMB0.8 | num | name | colour | type (2D) | prop | group | topology | node | angle |  @end
         'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
@@ -1315,7 +1315,7 @@ Public Class GsaComUtil
             sGwaCommand += "," + dOffset.Item(0)(2).ToString()  'transverse offset
         Else
             sGwaCommand += "," + dOffset.Item(0)(2).ToString()  'axial offset at start
-            sGwaCommand += ",NO"                                'auto internal offset 
+            sGwaCommand += ",NO"                                'auto internal offset
         End If
         m_GSAObject.GwaCommand(sGwaCommand)
         Return iElem
@@ -1361,7 +1361,7 @@ Public Class GsaComUtil
                 'off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure@End
                 'MEMB0.8 | num | name | colour | type (1D) | prop | group | topology | node | angle | @end
                 'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
-                'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end 
+                'is_rls { | rls { | k } } | restraint_end_1 | restraint_end_2 | EXPLICIT | nump | { point | rest | } | nums | { span | rest | } @end
                 'height | load_ref | stud_layout | off_auto_x1 | off_auto_x2 | off_auto_internal | off_x1 | off_x2 | off_y | off_z | exposure @End
                 'MEMB0.8 | num | name | colour | type (2D) | prop | group | topology | node | angle |  @end
                 'mesh_size | is_intersector | analysis_type | fire | time[4] | dummy | @End
@@ -1512,7 +1512,7 @@ Public Class GsaComUtil
 
                     If sArg.Equals("OFF") Then
                         iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 1 
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'offset type 1
                         Dim OffsetType1 As String = sArg
 
                         iNextIndex = iNextIndex + 1
@@ -1520,7 +1520,7 @@ Public Class GsaComUtil
                         Dim OffsetType2 As String = sArg
 
                         iNextIndex = iNextIndex + 1
-                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x1 
+                        sArg = GsaComUtil.Arg(iNextIndex, sGwaCommand) 'x1
                         Dim X1 As Double = CDbl(sArg)
 
                         iNextIndex = iNextIndex + 1
@@ -1603,14 +1603,14 @@ Public Class GsaComUtil
         sGwaCommand += "," + iProp.ToString()       'property
         sGwaCommand += ",1"                         'group
         For Each topo As String In iTopoList
-            sGwaCommand += "," + topo               'topo 
+            sGwaCommand += "," + topo               'topo
         Next
         sGwaCommand += "," + iOrNode.ToString()     'orientation node
         sGwaCommand += "," + dBeta.ToString()       'orientation angle
         sGwaCommand += "," + "RLS"                  'is_rls
-      
+
         For Each rels As String In sRelease
-            sGwaCommand += "," + rels      'topo 
+            sGwaCommand += "," + rels      'topo
             For Each c As Char In rels
                 If c.Equals("K") Then
                     sGwaCommand += ",1.0"
@@ -1619,14 +1619,14 @@ Public Class GsaComUtil
         Next
 
         If dOffset.Count > 1 Then
-            sGwaCommand += "," + dOffset(0)(0).ToString()      'X1 
-            sGwaCommand += "," + dOffset(1)(0).ToString()      'X2                           
-            sGwaCommand += "," + dOffset(0)(1).ToString()      'Y 
+            sGwaCommand += "," + dOffset(0)(0).ToString()      'X1
+            sGwaCommand += "," + dOffset(1)(0).ToString()      'X2
+            sGwaCommand += "," + dOffset(0)(1).ToString()      'Y
             sGwaCommand += "," + dOffset(0)(2).ToString()      'Z
         Else
-            sGwaCommand += ",0" 'X1 
-            sGwaCommand += ",0" 'X2 
-            sGwaCommand += ",0" 'Y 
+            sGwaCommand += ",0" 'X1
+            sGwaCommand += ",0" 'X2
+            sGwaCommand += ",0" 'Y
             sGwaCommand += ",0" 'Z
         End If
         sGwaCommand += "," + strDummy
@@ -2420,7 +2420,7 @@ Public Class GsaComUtil
          Return cStrItem.Trim()
     End Function
     Public Sub StringTolist(ByVal sTopo As String, ByRef orderedNodes As List(Of List(Of Integer)), ByRef arcNode As List(Of Integer), ByRef voids As List(Of List(Of Integer)))
-       
+
         orderedNodes = New List(Of List(Of Integer))
         arcNode = New List(Of Integer)
         voids = New List(Of List(Of Integer))
@@ -2434,7 +2434,7 @@ Public Class GsaComUtil
             items.Add(item.Value)
         Next
 
-       
+
         For Each item As String In items
             Dim voidList As New List(Of Integer)
             Dim solidList As New List(Of Integer)

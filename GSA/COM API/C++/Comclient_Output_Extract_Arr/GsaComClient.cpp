@@ -57,7 +57,7 @@ BOOL CGsaComClientApp::InitInstance()
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		try 
+		try
 		{
 			invokeGsa(dlg.m_filename, dlg.m_analysed_filename,dlg.m_analysed_filename_report);
 		}
@@ -85,23 +85,23 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 
 	IComAutoPtr pObj(__uuidof(ComAuto));
 	short ret_code = 0;
-	
+
 	_bstr_t bsFileName = (LPCTSTR)filename;
 	ret_code = pObj->Open(bsFileName);
 	if(ret_code ==1)
 		return;
-	
+
 	_bstr_t bsContent(_T("RESULTS"));
 	ret_code = pObj->Delete(bsContent);
 	ASSERT(ret_code != 1);	// file not open!
-	
+
 	_variant_t vCase(0L);
 	ret_code = pObj->Analyse(vCase);
 	ASSERT(ret_code ==0);
 	long NumberOfIntermediatPoint = 4;
 	CFile theFile;
-	
-	
+
+
 	_variant_t vt = pObj->GwaCommand("HIGHEST,EL");
 	 vt.ChangeType(VT_I4);
 	long Highest =  vt.iVal;
@@ -130,10 +130,10 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 				long lowerBound, upperBound;  // get array bounds
 				SafeArrayGetLBound(arryResult, 1 , &lowerBound);
 				SafeArrayGetUBound(arryResult, 1, &upperBound);
-				const int cnt_elements = upperBound - lowerBound + 1; 
-			
+				const int cnt_elements = upperBound - lowerBound + 1;
+
 					for (int i = 0; i < cnt_elements; ++i)  // iterate through returned values
-					{ 
+					{
 						CString Location(std::to_string(i+1).c_str());
 						WriteString(theFile,_T("At location ") + Location + _T(": FX(kN),FY(kN),FZ(kN),FRC(kN),MXX(kN-m),MYY(kN-m),MZZ(kN-m),MOM(kN-m)"));
 						SAFEARRAY *dynaRes = gsRes[i].dynaResults;
@@ -157,9 +157,9 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 	{
 		theFile.Abort();
 	}
-	
-		//	
-		
+
+		//
+
 	bstr_t bsAnalysedFileName = (LPCTSTR)analysed_filename;
 	ret_code = pObj->SaveAs(bsAnalysedFileName);
 	ASSERT(ret_code ==0);
