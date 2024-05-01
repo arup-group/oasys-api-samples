@@ -1,4 +1,4 @@
-﻿
+
 Imports System.Math
 
 Module Module1

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Oasys.AdSec;
 using Oasys.AdSec.DesignCode;
 using Oasys.AdSec.Materials;
@@ -24,18 +24,45 @@ namespace ReinforcedConcreteAnalysis
         public static void Main()
         {
             // Create a rectangular section
-            var profile = IRectangleProfile.Create(Length.FromMillimeters(800), Length.FromMillimeters(400));
-            IConcrete sectionMaterial = Concrete.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.C40_50;
+            var profile = IRectangleProfile.Create(
+                Length.FromMillimeters(800),
+                Length.FromMillimeters(400)
+            );
+            IConcrete sectionMaterial = Concrete
+                .EN1992
+                .Part1_1
+                .Edition_2004
+                .NationalAnnex
+                .GB
+                .Edition_2014
+                .C40_50;
             var section = ISection.Create(profile, sectionMaterial);
 
             // Set the cover
             section.Cover = ICover.Create(Length.FromMillimeters(40));
 
             // Set some reinforcement
-            IReinforcement reinforcementMaterial = Reinforcement.Steel.EN1992.Part1_1.Edition_2004.NationalAnnex.GB.Edition_2014.S500B;
-            IBarBundle bar20mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(20));
-            IBarBundle bar16mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(16));
-            IBarBundle bar12mm = IBarBundle.Create(reinforcementMaterial, Length.FromMillimeters(12));
+            IReinforcement reinforcementMaterial = Reinforcement
+                .Steel
+                .EN1992
+                .Part1_1
+                .Edition_2004
+                .NationalAnnex
+                .GB
+                .Edition_2014
+                .S500B;
+            IBarBundle bar20mm = IBarBundle.Create(
+                reinforcementMaterial,
+                Length.FromMillimeters(20)
+            );
+            IBarBundle bar16mm = IBarBundle.Create(
+                reinforcementMaterial,
+                Length.FromMillimeters(16)
+            );
+            IBarBundle bar12mm = IBarBundle.Create(
+                reinforcementMaterial,
+                Length.FromMillimeters(12)
+            );
 
             // Define top reinforcement
             ILayer topLayer = ILayerByBarCount.Create(4, bar16mm);
@@ -76,7 +103,10 @@ namespace ReinforcedConcreteAnalysis
             IServiceabilityResult serviceabilityResult = solution.Serviceability.Check(load);
 
             // Display the crack width in mm
-            double crackWidth = Math.Round(serviceabilityResult.MaximumWidthCrack.Width.Millimeters, 2);
+            double crackWidth = Math.Round(
+                serviceabilityResult.MaximumWidthCrack.Width.Millimeters,
+                2
+            );
             Console.WriteLine($"The maximum crack width is: {crackWidth}mm");
         }
     }

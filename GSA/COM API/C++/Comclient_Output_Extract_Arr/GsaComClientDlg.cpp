@@ -60,7 +60,7 @@ void CGsaComClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_FILENAME, m_filename);
 	DDX_Text(pDX, IDC_STATIC_ANALYSEDFILENAME, m_analysed_filename);
 	DDX_Text(pDX, IDC_STATIC_ANALYS_REPORT, m_analysed_filename_report);
-	
+
 }
 
 BEGIN_MESSAGE_MAP(CGsaComClientDlg, CDialog)

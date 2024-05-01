@@ -1,19 +1,19 @@
 # Load the AdSec API
-import oasys.adsec
+from pathlib import Path
 
 # Import modules from namespace
 from Oasys.AdSec import IAdSec, ISection, ISubComponent
 from Oasys.AdSec.DesignCode import IS456
-from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
-from Oasys.Profiles import IRectangleProfile, IPoint
-from Oasys.AdSec.Reinforcement import ICover, IBarBundle
+from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
+from Oasys.AdSec.Reinforcement import IBarBundle, ICover
 from Oasys.AdSec.Reinforcement.Groups import ILinkGroup, IPerimeterGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarPitch
-from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
+from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
+from Oasys.Profiles import IPoint, IRectangleProfile
 from OasysUnits import Length
 from OasysUnits.Units import LengthUnit
-from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
+from svglib.svglib import svg2rlg
 
 # This example shows how to save the XML to a file to create an SVG file.
 # It also shows how you can use a third party library to convert the SVG into a PNG file.
@@ -21,8 +21,9 @@ from reportlab.graphics import renderPM
 # You might like to run the 'ApiVersion' example first, just to check
 # that the API is installed correctly.
 
+
 def save_section_image():
-    # We're going to create a rectangular section with a sub-component.  
+    # We're going to create a rectangular section with a sub-component.
 
     # Create the rectangular section
     depth = Length(float(500), LengthUnit.Millimeter)
@@ -35,7 +36,7 @@ def save_section_image():
     section.Cover = ICover.Create(Length(float(30), LengthUnit.Millimeter))
 
     # Assign reinforcements to the main section
-    reinforcement_material = Reinforcement.Steel.IS456.Edition_2000.S415;
+    reinforcement_material = Reinforcement.Steel.IS456.Edition_2000.S415
     bar16mm = IBarBundle.Create(reinforcement_material, Length(float(16), LengthUnit.Millimeter))
     layer_pitch_125mm = ILayerByBarPitch.Create(bar16mm, Length(float(125), LengthUnit.Millimeter))
     main_reinforcement = IPerimeterGroup.Create()
@@ -75,12 +76,13 @@ def save_section_image():
     svg_str = SectionImageBuilder(flattened_section).Svg()
 
     # This string can be written into SVG format file
-    with open("examplepy.svg", "w") as file:
+    with Path("examplepy.svg").open(mode="w") as file:
         file.write(svg_str)
 
     # This string can be converted into PNG format file with a third party library like https://pypi.org/project/svglib
     drawing = svg2rlg("examplepy.svg")
     renderPM.drawToFile(drawing, "examplepy.png", fmt="PNG")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     save_section_image()

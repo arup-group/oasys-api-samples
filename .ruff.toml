@@ -1,0 +1,17 @@
+fix = true
+line-length = 120
+target-version = "py39"
+
+[lint]
+# Enable Pyflakes and pycodestyle rules.
+# see https://github.com/charliermarsh/ruff#supported-rules
+# F = Pyflakes
+# E,W = pycodestyle
+# N = pep8-naming
+# UP = pyupgrade
+# B = bugbear
+# PTH = flake8-use-pathlib
+# PL = pylint
+select = ["E", "F", "W", "N", "RUF", "I001", "UP", "B", "PTH", "PL"]
+# E501: line too long
+ignore = ["E501"]

@@ -1,4 +1,4 @@
-﻿Imports Interop.gsa_8_7
+Imports Interop.gsa_8_7
 
 Module Module1
 
@@ -17,7 +17,7 @@ Module Module1
 
         ' generate elements between them
         ' EL,1,,NO_RGB,BEAM,1,1,1,2
-        ' EL.2 | num | name | colour | type | prop | group | topo() | orient_node | orient_angle | 
+        ' EL.2 | num | name | colour | type | prop | group | topo() | orient_node | orient_angle |
         ' is_rls { | rls { | k } } is_offset { | ox | oy | oz } | dummy
 
         Dim ret As Integer ' to store the return code
@@ -32,4 +32,3 @@ Module Module1
     End Sub
 
 End Module
-

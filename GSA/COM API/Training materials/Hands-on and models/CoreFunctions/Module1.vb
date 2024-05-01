@@ -1,4 +1,4 @@
-﻿Imports Interop
+Imports Interop
 
 Module Module1
 
@@ -9,5 +9,3 @@ Module Module1
     End Sub
 
 End Module
-
-

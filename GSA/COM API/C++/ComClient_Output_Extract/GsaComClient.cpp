@@ -56,7 +56,7 @@ BOOL CGsaComClientApp::InitInstance()
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		try 
+		try
 		{
 			invokeGsa(dlg.m_filename, dlg.m_analysed_filename,dlg.m_analysed_filename_report);
 		}
@@ -84,16 +84,16 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 
 	IComAutoPtr pObj(__uuidof(ComAuto));
 	short ret_code = 0;
-	
+
 	_bstr_t bsFileName = (LPCTSTR)filename;
 	ret_code = pObj->Open(bsFileName);
 	if(ret_code ==1)
 		return;
-	
+
 	_bstr_t bsContent(_T("RESULTS"));
 	ret_code = pObj->Delete(bsContent);
 	ASSERT(ret_code != 1);	// file not open!
-	
+
 	_variant_t vCase(0L);
 	ret_code = pObj->Analyse(vCase);
 	ASSERT(ret_code ==0);
@@ -107,7 +107,7 @@ void CGsaComClientApp::invokeGsa(CString filename, CString analysed_filename,CSt
 		theFile.Open(analysed_filename_report,CFile::modeCreate | CFile::modeWrite);
 		for (int ele = 1; ele <= Highest; ele++)
 		{
-		
+
 			CString strEle;strEle.Format(_T("%d"), ele);
 			CString gwa =  _T("EXIST,EL,") + strEle;
 			BSTR bstrUser = gwa.AllocSysString();

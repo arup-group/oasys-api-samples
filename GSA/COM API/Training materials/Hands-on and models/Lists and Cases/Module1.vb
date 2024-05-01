@@ -1,4 +1,4 @@
-﻿Imports Interop.gsa_8_7
+Imports Interop.gsa_8_7
 Imports System.Diagnostics
 
 Module Module1
@@ -21,7 +21,7 @@ Module Module1
             Dim gwa As String = gsa.GwaCommand("GET, NODE," & ent)
             ' write it to the console
             Console.WriteLine(gwa)
-            ' Fix all nodes 
+            ' Fix all nodes
             gwa += ",NO_GRID,0,REST,1,1,1,1,1,1"
             ' store back into GSA
             gsa.GwaCommand(gwa)

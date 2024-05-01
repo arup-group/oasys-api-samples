@@ -14,3 +14,4 @@ DawnCache
 GPUCache
 x64
 
+.ruff_cache

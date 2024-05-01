@@ -2,16 +2,16 @@
     MICROSOFT FOUNDATION CLASS LIBRARY : GsaComClient Project Overview
 ===============================================================================
 
-The application wizard has created this GsaComClient application for 
-you.  This application not only demonstrates the basics of using the Microsoft 
+The application wizard has created this GsaComClient application for
+you.  This application not only demonstrates the basics of using the Microsoft
 Foundation Classes but is also a starting point for writing your application.
 
 This file contains a summary of what you will find in each of the files that
 make up your GsaComClient application.
 
 GsaComClient.vcproj
-    This is the main project file for VC++ projects generated using an application wizard. 
-    It contains information about the version of Visual C++ that generated the file, and 
+    This is the main project file for VC++ projects generated using an application wizard.
+    It contains information about the version of Visual C++ that generated the file, and
     information about the platforms, configurations, and project features selected with the
     application wizard.
 
@@ -35,7 +35,7 @@ res\GsaComClient.ico
     icon is included by the main resource file GsaComClient.rc.
 
 res\GsaComClient.rc2
-    This file contains resources that are not edited by Microsoft 
+    This file contains resources that are not edited by Microsoft
     Visual C++. You should place all resources not editable by
     the resource editor in this file.
 
@@ -69,11 +69,11 @@ Other notes:
 The application wizard uses "TODO:" to indicate parts of the source code you
 should add to or customize.
 
-If your application uses MFC in a shared DLL, you will need 
-to redistribute the MFC DLLs. If your application is in a language 
-other than the operating system's locale, you will also have to 
-redistribute the corresponding localized resources MFC80XXX.DLL. 
-For more information on both of these topics, please see the section on 
-redistributing Visual C++ applications in MSDN documentation. 
+If your application uses MFC in a shared DLL, you will need
+to redistribute the MFC DLLs. If your application is in a language
+other than the operating system's locale, you will also have to
+redistribute the corresponding localized resources MFC80XXX.DLL.
+For more information on both of these topics, please see the section on
+redistributing Visual C++ applications in MSDN documentation.
 
 /////////////////////////////////////////////////////////////////////////////
