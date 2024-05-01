@@ -1,6 +1,7 @@
 ---
 name: sanity checks
 # merge_group triggers happen in merge queues
+
 # workflow_dispatch triggers happen when a user manually runs the workflow
 # pull_request triggers happen when a pull request is updated
 on: [merge_group, pull_request, workflow_dispatch]
@@ -30,5 +31,6 @@ jobs:
       shell: bash
       id: Run_pre-commit
       # this makes sure we do not accidentally use hooks that need docker on the dev machines
+
       env:
         DOCKER_HOST: docker_intentionally_disabled
