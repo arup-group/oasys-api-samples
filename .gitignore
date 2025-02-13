@@ -15,3 +15,5 @@ GPUCache
 x64
 
 .ruff_cache
+.vscode/
+,venv/
