@@ -1,9 +1,9 @@
-Imports Interop.gsa_8_7
+Imports Interop.Gsa_10_3
 
 Module Module1
 
     Sub Main()
-        Dim gsa As New Interop.gsa_8_7.ComAuto
+        Dim gsa As New Interop.Gsa_10_3.ComAuto
 
         gsa.NewFile()
 

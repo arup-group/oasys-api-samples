@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Oasys.Gsa.DotNetHelpers;
-using Interop.Gsa_10_2;
+using Interop.Gsa_10_3;
 using System.Xml.Linq;
 
 namespace demo_sinosoidal_roof
