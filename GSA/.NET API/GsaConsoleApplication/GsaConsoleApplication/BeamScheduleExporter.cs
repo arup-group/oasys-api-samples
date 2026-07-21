@@ -1,10 +1,10 @@
-using CsvHelper;
-using CsvHelper.Configuration;
-using GsaAPI;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CsvHelper;
+using CsvHelper.Configuration;
+using GsaAPI;
 
 namespace GsaConsoleApplication
 {
@@ -34,12 +34,12 @@ namespace GsaConsoleApplication
                 // loop through the elements writing the results to CSV
                 foreach (var caseResult in results)
                 {
-                    foreach (var elementResult in caseResult.Value.Element1DResults("all", 2))
+                    foreach (var elementResult in caseResult.Value.Element1dForce("all", 2))
                     {
                         csv.WriteRecord(elementResult.Key);
                         csv.WriteRecord(caseResult.Key);
-                        csv.WriteRecord(elementResult.Value.Force.First());
-                        csv.WriteRecord(elementResult.Value.Force.Last());
+                        csv.WriteRecord(elementResult.Value.First());
+                        csv.WriteRecord(elementResult.Value.Last());
                         csv.NextRecord();
                     }
                 }

@@ -86,11 +86,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.Gsa_10_3" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_3.dll</HintPath>
+      <HintPath>C:\Program Files\Oasys\GSA 10.3\Interop.Gsa_10_3.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Interop.Gsa_10_3" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_3.dll</HintPath>
+      <HintPath>C:\Program Files\Oasys\GSA 10.3\Interop.Gsa_10_3.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />

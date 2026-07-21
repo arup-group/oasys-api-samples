@@ -1,5 +1,5 @@
-using GsaAPI;
 using System.IO;
+using GsaAPI;
 
 namespace GsaConsoleApplication
 {

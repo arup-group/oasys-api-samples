@@ -48,7 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Interop.Gsa_10_3">
-      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_3.dll</HintPath>
+      <HintPath>C:\Program Files\Oasys\GSA 10.3\Interop.Gsa_10_3.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
