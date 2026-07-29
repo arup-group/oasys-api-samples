@@ -85,12 +85,12 @@
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.Gsa_10_2" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_2.dll</HintPath>
+    <Reference Include="Interop.Gsa_10_3" Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+      <HintPath>C:\Program Files\Oasys\GSA 10.3\Interop.Gsa_10_3.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Interop.Gsa_10_2" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-      <HintPath>C:\Program Files\Oasys\GSA 10.2\Interop.Gsa_10_2.dll</HintPath>
+    <Reference Include="Interop.Gsa_10_3" Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+      <HintPath>C:\Program Files\Oasys\GSA 10.3\Interop.Gsa_10_3.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
@@ -99,7 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Import Include="Interop.Gsa_10_2" />
+    <Import Include="Interop.Gsa_10_3" />
     <Import Include="Microsoft.SqlServer.Server" />
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="Oasys.Gsa" />

@@ -1,10 +1,10 @@
-Imports Interop.gsa_10_2
+Imports Interop.Gsa_10_3
 Imports System.Diagnostics
 
 Module Module1
 
     Sub Main()
-        Dim gsa As New Interop.gsa_10_2.ComAuto
+        Dim gsa As New Interop.Gsa_10_3.ComAuto
 
         ' open existing file
         gsa.Open("c:\GSA_Training\portalfram04.gwb")
