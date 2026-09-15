@@ -3,22 +3,23 @@ from Oasys.AdSec import ILicense
 
 if __name__ == "__main__":
 
-    res = ILicense.ActivateLicense("license_number","password")
-    if res.ActionStatus == 1:
-        print("License activated successfully!")
+    activation = ILicense.ActivateLicense(input("Please enter your license number: "), input("Please enter your password: "))
+    
+    
+    if activation.ActionStatus == 1:
+        print("\n" + "License activated successfully!" + "\n")
+        
+        print("Product Name:", activation.ProductInformation.ProductName)
+        print("Version:", activation.ProductInformation.Version)
+        
+        print("Company Name:", activation.LicenseInformation.CompanyName)
+        print("License Id:", activation.LicenseInformation.LicenseId)
+        print("Number of Days left:", activation.LicenseInformation.NumberOfDays)
+        print("Number of Seats remaining:", activation.LicenseInformation.NumberOfSeats)
+        print("Session Id:", activation.LicenseInformation.SessionId)
+        print("Time Allocated Until Expiry:", activation.LicenseInformation.TimeAllocatedUntilExpiry)
+    
     else:
-        print("Failed to activate license.")
+        for warning in activation.Warnings:
+            print(warning.Description)
                        
-    print("Product Name:", res.ProductInformation.ProductName)
-    print("Version:", res.ProductInformation.Version)
-    
-    print("Company Name:", res.LicenseInformation.CompanyName)
-    print("License Id:", res.LicenseInformation.LicenseId)
-    print("Number of Days left:", res.LicenseInformation.NumberOfDays)
-    print("Number of Seats remaining:", res.LicenseInformation.NumberOfSeats)
-    print("Session Id:", res.LicenseInformation.SessionId)
-    print("Time Allocated Until Expiry:", res.LicenseInformation.TimeAllocatedUntilExpiry)
-    
-
-    for warning in res.Warnings:
-        print(warning.Description)
