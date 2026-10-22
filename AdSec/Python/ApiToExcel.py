@@ -1,7 +1,8 @@
 # Load the AdSec API
+import oasys.adsec
 import os
-import tempfile
 from random import randint
+import tempfile
 
 # importing packages
 import openpyxl as op  # OPen source library that can be used for reading and writing into the excel files
@@ -32,15 +33,13 @@ def main():
     # Analysing the section
     circle_section_analysis = ad_sec.Analyse(section)
 
-    max_utilisation = 100
-
     for i in range(1, 11):
         circle_load = create_circle_load(worksheet, i)
 
         # Getting the strength results
         strength_result = circle_section_analysis.Strength.Check(circle_load)
         utilisation = round(strength_result.LoadUtilisation.Percent, 1)
-        uls_status = "Clear" if utilisation < max_utilisation else "Not Clear"
+        uls_status = "Passed" if utilisation < 100 else "Failed"
         worksheet[f"D{i}"].value = utilisation
         worksheet[f"E{i}"].value = uls_status
 

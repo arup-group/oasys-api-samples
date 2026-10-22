@@ -1,19 +1,19 @@
 # Load the AdSec API
-from pathlib import Path
+import oasys.adsec
 
 # Import modules from namespace
 from Oasys.AdSec import IAdSec, ISection, ISubComponent
 from Oasys.AdSec.DesignCode import IS456
-from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
-from Oasys.AdSec.Reinforcement import IBarBundle, ICover
+from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
+from Oasys.Profiles import IRectangleProfile, IPoint
+from Oasys.AdSec.Reinforcement import ICover, IBarBundle
 from Oasys.AdSec.Reinforcement.Groups import ILinkGroup, IPerimeterGroup
 from Oasys.AdSec.Reinforcement.Layers import ILayerByBarPitch
-from Oasys.AdSec.StandardMaterials import Concrete, Reinforcement
-from Oasys.Profiles import IPoint, IRectangleProfile
+from Oasys.AdSec.IO.Graphics.Section import SectionImageBuilder
 from OasysUnits import Length
 from OasysUnits.Units import LengthUnit
-from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
 
 # This example shows how to save the XML to a file to create an SVG file.
 # It also shows how you can use a third party library to convert the SVG into a PNG file.
@@ -37,11 +37,17 @@ def save_section_image():
 
     # Assign reinforcements to the main section
     reinforcement_material = Reinforcement.Steel.IS456.Edition_2000.S415
-    bar16mm = IBarBundle.Create(reinforcement_material, Length(float(16), LengthUnit.Millimeter))
-    layer_pitch_125mm = ILayerByBarPitch.Create(bar16mm, Length(float(125), LengthUnit.Millimeter))
+    bar16mm = IBarBundle.Create(
+        reinforcement_material, Length(float(16), LengthUnit.Millimeter)
+    )
+    layer_pitch_125mm = ILayerByBarPitch.Create(
+        bar16mm, Length(float(125), LengthUnit.Millimeter)
+    )
     main_reinforcement = IPerimeterGroup.Create()
     main_reinforcement.Layers.Add(layer_pitch_125mm)
-    link10mm = IBarBundle.Create(reinforcement_material, Length(float(10), LengthUnit.Millimeter))
+    link10mm = IBarBundle.Create(
+        reinforcement_material, Length(float(10), LengthUnit.Millimeter)
+    )
     link = ILinkGroup.Create(link10mm)
     section.ReinforcementGroups.Add(main_reinforcement)
     section.ReinforcementGroups.Add(link)
@@ -49,12 +55,16 @@ def save_section_image():
     # Create another rectangular section which we'll use as a sub-component.
     subcomponent_depth = Length(float(250), LengthUnit.Millimeter)
     subcomponent_width = Length(float(700), LengthUnit.Millimeter)
-    subcomponent_profile = IRectangleProfile.Create(subcomponent_depth, subcomponent_width)
+    subcomponent_profile = IRectangleProfile.Create(
+        subcomponent_depth, subcomponent_width
+    )
     subcomponent_section = ISection.Create(subcomponent_profile, section_material)
     subcomponent_section.Cover = ICover.Create(Length(float(30), LengthUnit.Millimeter))
 
     # Assign reinforcements to sub-component section
-    layer_pitch_120mm = ILayerByBarPitch.Create(bar16mm, Length(float(120), LengthUnit.Millimeter))
+    layer_pitch_120mm = ILayerByBarPitch.Create(
+        bar16mm, Length(float(120), LengthUnit.Millimeter)
+    )
     subcomponent_reinforcement = IPerimeterGroup.Create()
     subcomponent_reinforcement.Layers.Add(layer_pitch_120mm)
     subcomponent_link = ILinkGroup.Create(link10mm)
@@ -76,7 +86,7 @@ def save_section_image():
     svg_str = SectionImageBuilder(flattened_section).Svg()
 
     # This string can be written into SVG format file
-    with Path("examplepy.svg").open(mode="w") as file:
+    with open("examplepy.svg", "w") as file:
         file.write(svg_str)
 
     # This string can be converted into PNG format file with a third party library like https://pypi.org/project/svglib

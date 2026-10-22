@@ -1,4 +1,5 @@
 # Load the AdSec API
+import oasys.adsec
 
 # Import modules
 from Oasys.AdSec import IVersion

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Oasys.AdSec;
 
 namespace api_license_check
@@ -6,8 +6,11 @@ namespace api_license_check
     class Program
     {
         static void Main(string[] args)
-        {                       
-            var activation = ILicense.ActivateLicense(ReadInput("Please enter your License ID: "), ReadInput("Please enter your Password: "));
+        {
+            var activation = ILicense.ActivateLicense(
+                ReadInput("Please enter your License ID: "),
+                ReadInput("Please enter your Password: ")
+            );
             if (activation.ActionStatus)
             {
                 Console.WriteLine("\nLicense activated successfully!\n");
@@ -18,7 +21,10 @@ namespace api_license_check
                 Console.WriteLine("Days left: " + activation.LicenseInformation.NumberOfDays);
                 Console.WriteLine("Seats left: " + activation.LicenseInformation.NumberOfSeats);
                 Console.WriteLine("Session ID: " + activation.LicenseInformation.SessionId);
-                Console.WriteLine("Time Allocated Until Expiry: " + activation.LicenseInformation.TimeAllocatedUntilExpiry);
+                Console.WriteLine(
+                    "Time Allocated Until Expiry: "
+                        + activation.LicenseInformation.TimeAllocatedUntilExpiry
+                );
             }
             else
             {
