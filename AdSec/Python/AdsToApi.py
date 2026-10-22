@@ -14,16 +14,13 @@ from pathlib import Path
 
 def ads_to_api():
     # Get the path of the .ads file.
-    dirname = os.path.dirname(__file__)
-    common_directory = Path(dirname).parents[
-        1
-    ]  # Third party library 'pathlib' is used to access required directory level
-    ads_file_path = os.path.join(
-        common_directory,
-        "DocumentationOnly",
-        "Python",
-        "PythonCodeSnippets",
-        "api2section.ads",
+    common_directory = Path(__file__).resolve().parents[1]
+    ads_file_path = (
+        common_directory
+        / "DocumentationOnly"
+        / "Python"
+        / "PythonCodeSnippets"
+        / "api2section.ads"
     )
 
     # Read the .ads file
