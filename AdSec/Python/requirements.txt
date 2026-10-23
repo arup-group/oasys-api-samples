@@ -1,4 +1,5 @@
 oasys.adsec
+reportlab==4.0.0
 svglib==1.3.0
 pathlib
 openpyxl==3.1.2
