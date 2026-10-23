@@ -1,4 +1,4 @@
-Contains C# and VB.NET samples of COM clients. Also includes a wrapper class to the GSA COM object with functions for getting and setting data using GwaComamnd.
+Contains C# and VB.NET samples of COM clients. Also includes a wrapper class to the GSA COM object with functions for getting and setting data using GwaCommand.
 
 ## demo_sinosoidal_roof_forces
 This example in C# uses the following functions to extract element forces at intermediate points in array:
@@ -6,7 +6,7 @@ This example in C# uses the following functions to extract element forces at int
   - Output_Extract_Arr(...):-Extract output parameter results in array.
 
 ## demo_sinosoidal_roof
-This example demonstrate new COM functions which directly work on data object :
+This example demonstrates new COM functions which directly work on data object :
 - Nodes(...) and SetNodes(...) for getting and setting an array of GsaNode objects.
 - Elements(...) and SetElements(...) for getting and setting an array of GsaElement objects.
 - Sections(...) and SetSections(...) for getting and setting an array of GsaSection objects.

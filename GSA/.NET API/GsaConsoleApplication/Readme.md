@@ -4,7 +4,7 @@ This is an example console application that uses the GSA .NET API to output CSV 
 ## Usage
 The example application (once compiled) takes two command line arguments:
 - `--input-file` (or simply `-i`) to specify the GSA file to open
-- `--output-directory` (or `-o`) to specify the directoy to save the output CSV
+- `--output-directory` (or `-o`) to specify the directory to save the output CSV
 
 An example run might look something like this:
 ```
@@ -13,7 +13,7 @@ GsaConsoleApplication.exe --input-file "C:\My model.gwb" --output-directory "C:\
 This example app should produce a CSV containing some details of the model:
 - Node data
 - Element data
-- Mamber data
+- Member data
 - Custom 1D element results table
 
 > Note, this console application uses the GSA .NET API, so GSA must be installed and the installation directory should be on the system's Path variable.
