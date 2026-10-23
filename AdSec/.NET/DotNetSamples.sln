@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiToAds", "ApiToAds\ApiToA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaveSectionImage", "SaveSectionImage\SaveSectionImage.csproj", "{783B4A2C-477D-4C05-9AC5-EE1644BE5245}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseActivation", "LicenseActivation\LicenseActivation.csproj", "{F393769C-F037-AD8A-D730-DD4C34DF77C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LicenseDeactivation", "LicenseDeactivation\LicenseDeactivation.csproj", "{FC4518BE-BEEA-BC40-E2A7-7273D01FDC0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +55,14 @@ Global
 		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Debug|x64.Build.0 = Debug|x64
 		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Release|x64.ActiveCfg = Release|x64
 		{783B4A2C-477D-4C05-9AC5-EE1644BE5245}.Release|x64.Build.0 = Release|x64
+		{F393769C-F037-AD8A-D730-DD4C34DF77C6}.Debug|x64.ActiveCfg = Debug|x64
+		{F393769C-F037-AD8A-D730-DD4C34DF77C6}.Debug|x64.Build.0 = Debug|x64
+		{F393769C-F037-AD8A-D730-DD4C34DF77C6}.Release|x64.ActiveCfg = Release|x64
+		{F393769C-F037-AD8A-D730-DD4C34DF77C6}.Release|x64.Build.0 = Release|x64
+		{FC4518BE-BEEA-BC40-E2A7-7273D01FDC0F}.Debug|x64.ActiveCfg = Debug|x64
+		{FC4518BE-BEEA-BC40-E2A7-7273D01FDC0F}.Debug|x64.Build.0 = Debug|x64
+		{FC4518BE-BEEA-BC40-E2A7-7273D01FDC0F}.Release|x64.ActiveCfg = Release|x64
+		{FC4518BE-BEEA-BC40-E2A7-7273D01FDC0F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
