@@ -1,7 +1,7 @@
 Contains a minimal C++ COM sample that demonstrates initialization of the COM object and model analysis.
 
 ## ComClient_OutPut_Extract
-This example uses the following functions to extract element forces at intermediate point:
+This example uses the following functions to extract element forces at intermediate points:
 - Import gsa type library file (```#import "Gsa.tlb"```)
 - Create GSA COM Object (`IComAutoPtr pObj(__uuidof(ComAuto))`)
 - Initialize output function and should be called before calling any other "Output_" functions (`Output_Init(...)`)
